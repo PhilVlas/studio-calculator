@@ -26,6 +26,10 @@ const defaults = {
   loanTermYears: 10,
   graceMonths: 0,
   monthlyLeasePayment: 0,
+  startMembers: 350,
+  rampMonths: 12,
+  projectionMonths: 24,
+  scenarioVariance: 15,
 };
 
 const form = document.querySelector("#calculatorForm");
@@ -33,6 +37,8 @@ const resultCard = document.querySelector("#resultCard");
 const insights = document.querySelector("#insights");
 const fundingStatus = document.querySelector("#fundingStatus");
 const cashflowResult = document.querySelector("#cashflowResult");
+const cashflowMap = document.querySelector("#cashflowMap");
+const cashflowTableBody = document.querySelector("#cashflowTableBody");
 let lastCapitalRequirement = 0;
 
 const euro = new Intl.NumberFormat("de-DE", {
@@ -72,6 +78,118 @@ function annuityPayment(principal, monthlyInterest, months) {
   if (principal <= 0) return 0;
   if (monthlyInterest <= 0) return principal / months;
   return principal * (monthlyInterest / (1 - (1 + monthlyInterest) ** -months));
+}
+
+function operatingScenario(memberCount, grossFee, vatRate, monthlyCosts, debtService) {
+  const netRevenue = (memberCount * grossFee) / (1 + vatRate / 100);
+  const operatingResult = netRevenue - monthlyCosts;
+  return {
+    memberCount,
+    operatingResult,
+    cashflow: operatingResult - debtService,
+  };
+}
+
+function renderScenario(name, scenario) {
+  const state = scenario.cashflow >= 0 ? "positive" : "negative";
+  document.querySelector(`#scenario${name}Card`).dataset.state = state;
+  setText(`scenario${name}Status`, state === "positive" ? "Positiv" : "Negativ");
+  setText(
+    `scenario${name}Members`,
+    Math.round(scenario.memberCount).toLocaleString("de-DE"),
+  );
+  setText(`scenario${name}Result`, `${euro.format(scenario.operatingResult)} / Mon.`);
+  setText(`scenario${name}Cashflow`, `${euro.format(scenario.cashflow)} / Mon.`);
+}
+
+function renderProjection({
+  startMembers,
+  targetMembers,
+  rampMonths,
+  projectionMonths,
+  grossFee,
+  vatRate,
+  monthlyCosts,
+  regularDebtService,
+  graceDebtService,
+  graceMonths,
+}) {
+  const months = [];
+  let cumulativeCashflow = 0;
+  let lowestCumulativeCashflow = 0;
+  let firstPositiveMonth = null;
+
+  for (let month = 1; month <= projectionMonths; month += 1) {
+    const progress =
+      rampMonths <= 1 ? 1 : Math.min((month - 1) / (rampMonths - 1), 1);
+    const memberCount = startMembers + (targetMembers - startMembers) * progress;
+    const debtService = month <= graceMonths ? graceDebtService : regularDebtService;
+    const scenario = operatingScenario(
+      memberCount,
+      grossFee,
+      vatRate,
+      monthlyCosts,
+      debtService,
+    );
+    cumulativeCashflow += scenario.cashflow;
+    lowestCumulativeCashflow = Math.min(lowestCumulativeCashflow, cumulativeCashflow);
+    if (firstPositiveMonth === null && scenario.cashflow >= 0) firstPositiveMonth = month;
+    months.push({ month, cumulativeCashflow, ...scenario });
+  }
+
+  const finalMonth = months.at(-1);
+  setText(
+    "positiveCashflowMonth",
+    firstPositiveMonth === null ? "Nicht erreicht" : `Monat ${firstPositiveMonth}`,
+  );
+  setText("rampLiquidityNeed", euro.format(Math.abs(lowestCumulativeCashflow)));
+  setText("projectionCumulative", euro.format(cumulativeCashflow));
+  setText(
+    "projectionEndMembers",
+    Math.round(finalMonth.memberCount).toLocaleString("de-DE"),
+  );
+
+  cashflowMap.replaceChildren(
+    ...months.map((month) => {
+      const item = document.createElement("div");
+      item.className = "cashflow-month";
+      item.dataset.state = month.cashflow >= 0 ? "positive" : "negative";
+      item.setAttribute("role", "listitem");
+      item.setAttribute(
+        "aria-label",
+        `Monat ${month.month}: ${Math.round(month.memberCount).toLocaleString("de-DE")} Mitglieder, ${euro.format(month.cashflow)} Cashflow.`,
+      );
+      item.title = `${euro.format(month.cashflow)} Cashflow`;
+      item.textContent = `M${month.month}`;
+      return item;
+    }),
+  );
+
+  cashflowTableBody.replaceChildren(
+    ...months.map((month) => {
+      const row = document.createElement("tr");
+      const monthCell = document.createElement("th");
+      monthCell.scope = "row";
+      monthCell.textContent = `Monat ${month.month}`;
+
+      const values = [
+        Math.round(month.memberCount).toLocaleString("de-DE"),
+        euro.format(month.operatingResult),
+        euro.format(month.cashflow),
+        euro.format(month.cumulativeCashflow),
+      ];
+      const cells = values.map((content, index) => {
+        const cell = document.createElement("td");
+        cell.textContent = content;
+        if ((index === 2 && month.cashflow < 0) || (index === 3 && month.cumulativeCashflow < 0)) {
+          cell.dataset.state = "negative";
+        }
+        return cell;
+      });
+      row.append(monthCell, ...cells);
+      return row;
+    }),
+  );
 }
 
 function syncRentFields(sourceId) {
@@ -147,7 +265,9 @@ function calculate() {
     0,
     gracePayment * graceMonths + monthlyLoanPayment * repaymentMonths - bankLoan,
   );
-  const monthlyDebtService = monthlyLoanPayment + value("monthlyLeasePayment");
+  const monthlyLeasePayment = value("monthlyLeasePayment");
+  const monthlyDebtService = monthlyLoanPayment + monthlyLeasePayment;
+  const graceDebtService = gracePayment + monthlyLeasePayment;
   const cashflowAfterFinancing = monthlyResult - monthlyDebtService;
   const dscr = monthlyDebtService > 0 ? monthlyResult / monthlyDebtService : null;
   const equityReturn = equity > 0 ? (cashflowAfterFinancing * 12 * 100) / equity : null;
@@ -155,6 +275,52 @@ function calculate() {
     equity > 0 && cashflowAfterFinancing > 0
       ? equity / cashflowAfterFinancing
       : Number.POSITIVE_INFINITY;
+
+  const scenarioVariance = Math.min(value("scenarioVariance"), 100) / 100;
+  const conservativeScenario = operatingScenario(
+    Math.max(0, Math.round(members * (1 - scenarioVariance) + 1e-9)),
+    grossFee,
+    vatRate,
+    monthlyCosts,
+    monthlyDebtService,
+  );
+  const baseScenario = operatingScenario(
+    members,
+    grossFee,
+    vatRate,
+    monthlyCosts,
+    monthlyDebtService,
+  );
+  const optimisticScenario = operatingScenario(
+    Math.round(members * (1 + scenarioVariance) + 1e-9),
+    grossFee,
+    vatRate,
+    monthlyCosts,
+    monthlyDebtService,
+  );
+
+  renderScenario("Conservative", conservativeScenario);
+  renderScenario("Base", baseScenario);
+  renderScenario("Optimistic", optimisticScenario);
+  const varianceLabel = decimal.format(scenarioVariance * 100);
+  setText("scenarioConservativeAssumption", `−${varianceLabel} % Mitglieder`);
+  setText("scenarioOptimisticAssumption", `+${varianceLabel} % Mitglieder`);
+
+  renderProjection({
+    startMembers: value("startMembers"),
+    targetMembers: members,
+    rampMonths: Math.max(1, Math.min(60, Math.round(value("rampMonths")))),
+    projectionMonths: Math.max(
+      1,
+      Math.min(60, Math.round(value("projectionMonths"))),
+    ),
+    grossFee,
+    vatRate,
+    monthlyCosts,
+    regularDebtService: monthlyDebtService,
+    graceDebtService,
+    graceMonths,
+  });
 
   const projectName = document.querySelector("#projectName").value.trim();
   setText("resultProject", projectName || "Unbenanntes Projekt");
@@ -264,9 +430,10 @@ function calculate() {
   }
 
   if (monthlyDebtService > 0) {
-    const cashflowDirection = cashflowAfterFinancing >= 0 ? "Überschuss" : "Unterdeckung";
+    const cashflowDirection =
+      cashflowAfterFinancing >= 0 ? "ein Überschuss" : "eine Unterdeckung";
     insightItems.push(
-      `Nach ${euro.format(monthlyDebtService)} monatlichem Schuldendienst verbleibt eine ${cashflowDirection} von ${euro.format(Math.abs(cashflowAfterFinancing))}.`,
+      `Nach ${euro.format(monthlyDebtService)} monatlichem Schuldendienst verbleibt ${cashflowDirection} von ${euro.format(Math.abs(cashflowAfterFinancing))}.`,
     );
   } else {
     insightItems.push("Ohne Darlehens- oder Leasingrate entspricht der Cashflow dem Betriebsergebnis.");

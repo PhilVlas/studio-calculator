@@ -9,14 +9,14 @@
     />
     <meta name="theme-color" content="#10231f" />
     <title>Studio Calculator</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.1" />
-    <script src="app.js?v=0.2.1" defer></script>
+    <link rel="stylesheet" href="styles.css?v=0.3.0" />
+    <script src="app.js?v=0.3.0" defer></script>
   </head>
   <body>
     <header class="hero">
       <div class="hero__content">
         <div>
-          <p class="eyebrow">Studio Calculator · v0.2.1</p>
+          <p class="eyebrow">Studio Calculator · v0.3</p>
           <h1>Trägt sich der Standort?</h1>
           <p class="hero__intro">
             Eine schnelle erste Einschätzung zu Ergebnis, Break-even und
@@ -288,6 +288,44 @@
               </div>
             </div>
           </fieldset>
+
+          <fieldset class="scenario-fieldset">
+            <legend>Szenarien &amp; Hochlauf</legend>
+            <p class="fieldset-intro">
+              Vergleichen Sie unterschiedliche Mitgliederziele und bilden Sie
+              den linearen Studio-Hochlauf ab der Eröffnung ab.
+            </p>
+            <div class="field-grid scenario-input-grid">
+              <label class="field">
+                <span>Mitglieder zum Start</span>
+                <span class="input-wrap">
+                  <input id="startMembers" name="startMembers" type="number" min="0" step="10" value="350" />
+                  <span class="unit">Pers.</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Hochlauf bis zum Basisziel</span>
+                <span class="input-wrap">
+                  <input id="rampMonths" name="rampMonths" type="number" min="1" max="60" step="1" value="12" />
+                  <span class="unit">Mon.</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Betrachtungszeitraum</span>
+                <span class="input-wrap">
+                  <input id="projectionMonths" name="projectionMonths" type="number" min="1" max="60" step="1" value="24" />
+                  <span class="unit">Mon.</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Szenario-Abweichung</span>
+                <span class="input-wrap">
+                  <input id="scenarioVariance" name="scenarioVariance" type="number" min="0" max="50" step="1" value="15" />
+                  <span class="unit">± %</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
         </form>
       </section>
 
@@ -437,8 +475,148 @@
       </aside>
     </main>
 
+    <section class="analysis-section" aria-labelledby="analysis-title">
+      <header class="analysis-heading">
+        <div>
+          <p class="section-number">03</p>
+          <h2 id="analysis-title">Szenarien &amp; Hochlauf</h2>
+        </div>
+        <p>
+          Die Szenarien verändern ausschließlich die Mitgliederzahl. Beiträge,
+          Kosten und Finanzierung bleiben vergleichbar.
+        </p>
+      </header>
+
+      <div class="scenario-grid" aria-label="Vergleich der Planungsszenarien">
+        <article class="scenario-card" id="scenarioConservativeCard" data-state="positive">
+          <div class="scenario-card__heading">
+            <div>
+              <p class="scenario-name">Vorsichtig</p>
+              <span id="scenarioConservativeAssumption">−15 % Mitglieder</span>
+            </div>
+            <span class="scenario-status" id="scenarioConservativeStatus">Positiv</span>
+          </div>
+          <strong class="scenario-members" id="scenarioConservativeMembers">–</strong>
+          <span class="scenario-members-label">Mitglieder</span>
+          <dl>
+            <div>
+              <dt>Betriebsergebnis</dt>
+              <dd id="scenarioConservativeResult">–</dd>
+            </div>
+            <div>
+              <dt>Cashflow nach Finanzierung</dt>
+              <dd id="scenarioConservativeCashflow">–</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="scenario-card scenario-card--base" id="scenarioBaseCard" data-state="positive">
+          <div class="scenario-card__heading">
+            <div>
+              <p class="scenario-name">Basis</p>
+              <span>aktuelle Planung</span>
+            </div>
+            <span class="scenario-status" id="scenarioBaseStatus">Positiv</span>
+          </div>
+          <strong class="scenario-members" id="scenarioBaseMembers">–</strong>
+          <span class="scenario-members-label">Mitglieder</span>
+          <dl>
+            <div>
+              <dt>Betriebsergebnis</dt>
+              <dd id="scenarioBaseResult">–</dd>
+            </div>
+            <div>
+              <dt>Cashflow nach Finanzierung</dt>
+              <dd id="scenarioBaseCashflow">–</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="scenario-card" id="scenarioOptimisticCard" data-state="positive">
+          <div class="scenario-card__heading">
+            <div>
+              <p class="scenario-name">Optimistisch</p>
+              <span id="scenarioOptimisticAssumption">+15 % Mitglieder</span>
+            </div>
+            <span class="scenario-status" id="scenarioOptimisticStatus">Positiv</span>
+          </div>
+          <strong class="scenario-members" id="scenarioOptimisticMembers">–</strong>
+          <span class="scenario-members-label">Mitglieder</span>
+          <dl>
+            <div>
+              <dt>Betriebsergebnis</dt>
+              <dd id="scenarioOptimisticResult">–</dd>
+            </div>
+            <div>
+              <dt>Cashflow nach Finanzierung</dt>
+              <dd id="scenarioOptimisticCashflow">–</dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+
+      <section class="panel projection-panel" aria-labelledby="projection-title">
+        <div class="projection-heading">
+          <div>
+            <p class="section-kicker">Basis-Szenario</p>
+            <h2 id="projection-title">Cashflow im Hochlauf</h2>
+          </div>
+          <p>
+            Linearer Mitgliederaufbau; Einmalinvestitionen sind bereits im
+            Kapitalbedarf enthalten und werden hier nicht erneut abgezogen.
+          </p>
+        </div>
+
+        <div class="projection-summary">
+          <article>
+            <span>Positiver Monats-Cashflow ab</span>
+            <strong id="positiveCashflowMonth">–</strong>
+          </article>
+          <article>
+            <span>Liquiditätsbedarf im Hochlauf</span>
+            <strong id="rampLiquidityNeed">–</strong>
+          </article>
+          <article>
+            <span>Kumulierter Cashflow</span>
+            <strong id="projectionCumulative">–</strong>
+          </article>
+          <article>
+            <span>Mitglieder am Periodenende</span>
+            <strong id="projectionEndMembers">–</strong>
+          </article>
+        </div>
+
+        <div class="cashflow-map-heading">
+          <span>Monate im Überblick</span>
+          <div class="cashflow-legend" aria-hidden="true">
+            <span><i data-state="negative"></i>negativ</span>
+            <span><i data-state="positive"></i>positiv</span>
+          </div>
+        </div>
+        <div class="cashflow-map" id="cashflowMap" role="list"></div>
+
+        <details class="projection-details">
+          <summary>Monatliche Entwicklung anzeigen</summary>
+          <div class="projection-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Monat</th>
+                  <th>Mitglieder</th>
+                  <th>Betriebsergebnis</th>
+                  <th>Cashflow</th>
+                  <th>Kumuliert</th>
+                </tr>
+              </thead>
+              <tbody id="cashflowTableBody"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+    </section>
+
     <footer>
-      <p>Studio Calculator v0.2.1 · Statische Browser-App ohne Datenspeicherung</p>
+      <p>Studio Calculator v0.3 · Statische Browser-App ohne Datenspeicherung</p>
     </footer>
   </body>
 </html>

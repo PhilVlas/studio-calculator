@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.2.1
+v0.3
 
 ## Ziel
 
@@ -15,7 +15,7 @@ zu müssen.
 
 ## Ziel der aktuellen Version
 
-Version 0.2.1 bleibt technisch bewusst einfach:
+Version 0.3 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
@@ -72,6 +72,13 @@ Version 0.2.1 bleibt technisch bewusst einfach:
 - tilgungsfreie Anlaufzeit in Monaten
 - monatliche Leasingrate
 
+### Szenarien und Hochlauf
+
+- Mitgliederzahl zum Betriebsstart
+- Dauer des linearen Hochlaufs bis zur Basis-Mitgliederzahl
+- Betrachtungszeitraum in Monaten
+- prozentuale Mitgliederabweichung für vorsichtiges und optimistisches Szenario
+
 ## Berechnungen
 
 ### Monatsumsatz netto
@@ -126,6 +133,26 @@ Abschreibungen, Ertragsteuern und Sondereffekten.
 Die Darlehensrate und der Cashflow nach Finanzierung beziehen sich auf die
 reguläre Tilgungsphase nach einer gegebenenfalls tilgungsfreien Anlaufzeit.
 
+### Szenariovergleich
+
+- vorsichtiges Szenario: Basis-Mitgliederzahl abzüglich der eingestellten
+  prozentualen Abweichung
+- Basis-Szenario: aktuell eingetragene Mitgliederzahl
+- optimistisches Szenario: Basis-Mitgliederzahl zuzüglich der eingestellten
+  prozentualen Abweichung
+- Beiträge, laufende Kosten und Finanzierung bleiben in allen drei Szenarien
+  unverändert, damit der Einfluss der Mitgliederzahl sichtbar bleibt
+
+### Cashflow-Hochlauf
+
+- linearer Mitgliederaufbau von der Start-Mitgliederzahl bis zum Basisziel
+- monatliches Betriebsergebnis und Cashflow nach Finanzierung
+- während einer tilgungsfreien Anlaufzeit wird der reduzierte Schuldendienst
+  aus Zinsen und Leasingrate verwendet
+- kumulierter Cashflow über den gewählten Betrachtungszeitraum
+- Liquiditätsbedarf im Hochlauf als höchster kumulierter negativer Cashflow
+- erster Monat mit nicht negativem Cashflow nach Finanzierung
+
 ## Ergebnisdarstellung
 
 Die Anwendung zeigt:
@@ -141,6 +168,8 @@ Die Anwendung zeigt:
 - monatliche Darlehensrate und gesamter Schuldendienst
 - Cashflow nach Finanzierung, DSCR und vereinfachte Eigenkapitalrendite
 - geschätzte Gesamtzinsen und rechnerische Eigenkapital-Amortisation
+- drei vergleichbare Mitgliederszenarien mit Betriebsergebnis und Cashflow
+- Hochlauf-Zusammenfassung und monatsgenaue Cashflow-Tabelle
 - kurze textliche Einordnung der wichtigsten Werte
 
 ## Plattform- und Repository-Konzept
@@ -154,13 +183,13 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.2.1 berücksichtigt insbesondere noch nicht:
+Version 0.3 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen
 - Abschreibungen oder Ertragsteuern
 - getrennte fixe und variable Kosten
-- Szenarien, Versionen, PDF-Export oder Projektspeicherung
+- gespeicherte Szenarioversionen, PDF-Export oder Projektspeicherung
 - Benutzerkonten und geräteübergreifend synchronisierte Eingaben
 
 Die Ergebnisse sind eine überschlägige Entscheidungshilfe und keine Finanz-,

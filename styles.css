@@ -52,6 +52,7 @@ input {
 
 .hero__content,
 .app-layout,
+.analysis-section,
 footer {
   width: min(1180px, 100%);
   margin-inline: auto;
@@ -197,6 +198,10 @@ legend {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
+}
+
+.scenario-input-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .field-grid--location {
@@ -694,6 +699,295 @@ input {
   margin-bottom: 8px;
 }
 
+.analysis-section {
+  padding: 0 28px 70px;
+}
+
+.analysis-heading,
+.projection-heading,
+.scenario-card__heading,
+.cashflow-map-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.analysis-heading {
+  margin-bottom: 20px;
+}
+
+.analysis-heading > p,
+.projection-heading > p {
+  max-width: 590px;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  text-align: right;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.scenario-card {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.scenario-card--base {
+  border-color: rgba(54, 117, 77, 0.38);
+  box-shadow: 0 18px 55px rgba(26, 48, 40, 0.12);
+}
+
+.scenario-card__heading {
+  align-items: flex-start;
+}
+
+.scenario-name {
+  margin-bottom: 3px;
+  font-size: 0.88rem;
+  font-weight: 850;
+}
+
+.scenario-card__heading div > span,
+.scenario-members-label {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.scenario-status {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  color: #173020;
+  border-radius: 999px;
+  background: #d9f6c3;
+  font-size: 0.63rem;
+  font-weight: 850;
+}
+
+.scenario-card[data-state="negative"] .scenario-status {
+  color: #5f2118;
+  background: #ffd3ca;
+}
+
+.scenario-members {
+  display: block;
+  margin: 25px 0 0;
+  font-size: 2.05rem;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.scenario-members-label {
+  display: block;
+  margin-top: 4px;
+}
+
+.scenario-card dl {
+  display: grid;
+  gap: 9px;
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.scenario-card dl div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scenario-card dt,
+.scenario-card dd {
+  margin: 0;
+  font-size: 0.72rem;
+}
+
+.scenario-card dt {
+  color: var(--muted);
+}
+
+.scenario-card dd {
+  font-weight: 820;
+  text-align: right;
+}
+
+.scenario-card[data-state="negative"] dd:last-child {
+  color: #a94637;
+}
+
+.projection-panel {
+  margin-top: 16px;
+  padding: 26px;
+}
+
+.projection-heading {
+  align-items: center;
+}
+
+.projection-heading .section-kicker {
+  margin-bottom: 7px;
+}
+
+.projection-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 24px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.projection-summary article {
+  min-width: 0;
+  padding: 16px;
+  border-right: 1px solid var(--line);
+  background: #f8faf8;
+}
+
+.projection-summary article:last-child {
+  border-right: 0;
+}
+
+.projection-summary span {
+  display: block;
+  min-height: 2.6em;
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.3;
+}
+
+.projection-summary strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 1.03rem;
+}
+
+.cashflow-map-heading {
+  align-items: center;
+  margin: 26px 0 10px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.cashflow-legend {
+  display: flex;
+  gap: 13px;
+  font-size: 0.65rem;
+  font-weight: 650;
+}
+
+.cashflow-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cashflow-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green-deep);
+}
+
+.cashflow-legend i[data-state="negative"] {
+  background: var(--red);
+}
+
+.cashflow-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+  gap: 6px;
+}
+
+.cashflow-month {
+  display: grid;
+  min-height: 48px;
+  place-items: center;
+  color: #245638;
+  border: 1px solid rgba(54, 117, 77, 0.17);
+  border-radius: 9px;
+  background: #edf7e9;
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.cashflow-month[data-state="negative"] {
+  color: #8d382c;
+  border-color: rgba(169, 70, 55, 0.17);
+  background: #fff0ed;
+}
+
+.projection-details {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.projection-details summary {
+  width: fit-content;
+  color: #58645f;
+  font-weight: 780;
+  cursor: pointer;
+}
+
+.projection-table-wrap {
+  max-height: 410px;
+  margin-top: 14px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.projection-table-wrap table {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+  color: var(--ink);
+  font-size: 0.72rem;
+}
+
+.projection-table-wrap th,
+.projection-table-wrap td {
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+
+.projection-table-wrap th:first-child,
+.projection-table-wrap td:first-child {
+  text-align: left;
+}
+
+.projection-table-wrap th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: var(--muted);
+  background: #f8faf8;
+  font-size: 0.66rem;
+}
+
+.projection-table-wrap tr:last-child td {
+  border-bottom: 0;
+}
+
+.projection-table-wrap td[data-state="negative"] {
+  color: #a94637;
+}
+
 footer {
   padding: 0 28px 38px;
   color: #7b8681;
@@ -718,6 +1012,18 @@ footer {
   .insight-panel,
   .method-note {
     grid-column: 1 / -1;
+  }
+
+  .projection-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .projection-summary article:nth-child(2) {
+    border-right: 0;
+  }
+
+  .projection-summary article:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
   }
 }
 
@@ -759,6 +1065,7 @@ footer {
   .field-grid,
   .field-grid--location,
   .finance-input-group .field-grid,
+  .scenario-input-grid,
   .results-column {
     grid-template-columns: 1fr;
   }
@@ -775,6 +1082,46 @@ footer {
     display: block;
     margin-top: 5px;
     text-align: left;
+  }
+
+  .analysis-section {
+    padding: 0 14px 52px;
+  }
+
+  .analysis-heading,
+  .projection-heading {
+    display: block;
+  }
+
+  .analysis-heading > p,
+  .projection-heading > p {
+    margin-top: 10px;
+    text-align: left;
+  }
+
+  .scenario-grid,
+  .projection-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .scenario-card,
+  .projection-panel {
+    padding: 20px;
+    border-radius: 18px;
+  }
+
+  .projection-summary article,
+  .projection-summary article:nth-child(2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .projection-summary article:last-child {
+    border-bottom: 0;
+  }
+
+  .projection-summary span {
+    min-height: auto;
   }
 
   .field > span:first-child {
