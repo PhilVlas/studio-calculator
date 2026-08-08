@@ -1,14 +1,14 @@
-const CACHE_NAME = "studiocalculator-v0.6.0";
+const CACHE_NAME = "studiocalculator-v0.6.1";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=0.6.0",
-  "./app.js?v=0.6.0",
+  "./styles.css?v=0.6.1",
+  "./app.js?v=0.6.1",
   "./manifest.webmanifest",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/icon-512-maskable.png",
-  "./icons/apple-touch-icon.png",
+  "./icons/studiocalculator-192-v1.png",
+  "./icons/studiocalculator-512-v1.png",
+  "./icons/studiocalculator-maskable-512-v1.png",
+  "./icons/studiocalculator-apple-180-v1.png",
 ];
 
 self.addEventListener("install", (event) => {

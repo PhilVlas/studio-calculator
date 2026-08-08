@@ -15,16 +15,25 @@
     <meta name="apple-mobile-web-app-title" content="Studiocalculator" />
     <title>Studiocalculator</title>
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="icon" href="icons/icon-192.png" type="image/png" />
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-    <link rel="stylesheet" href="styles.css?v=0.6.0" />
-    <script src="app.js?v=0.6.0" defer></script>
+    <link rel="icon" href="icons/studiocalculator-192-v1.png" type="image/png" />
+    <link rel="apple-touch-icon" href="icons/studiocalculator-apple-180-v1.png" />
+    <link rel="stylesheet" href="styles.css?v=0.6.1" />
+    <script src="app.js?v=0.6.1" defer></script>
   </head>
   <body>
     <header class="hero">
       <div class="hero__content">
         <div>
-          <p class="eyebrow">Studiocalculator · v0.6.0</p>
+          <div class="brand-lockup">
+            <img
+              class="app-logo"
+              src="icons/studiocalculator-192-v1.png"
+              alt=""
+              width="48"
+              height="48"
+            />
+            <p class="eyebrow">Studiocalculator · v0.6.1</p>
+          </div>
           <h1>Trägt sich der Standort?</h1>
           <p class="hero__intro">
             Eine schnelle erste Einschätzung zu Ergebnis, Break-even und
@@ -694,7 +703,10 @@
     <section class="print-report" id="printReport" aria-hidden="true">
       <header class="print-header">
         <div>
-          <p class="print-brand">Studiocalculator · v0.6.0</p>
+          <div class="print-brand-row">
+            <img src="icons/studiocalculator-192-v1.png" alt="" />
+            <p class="print-brand">Studiocalculator · v0.6.1</p>
+          </div>
           <h1 id="printProjectName">Studio Musterstadt</h1>
           <p>Wirtschaftlichkeits- und Finanzierungsübersicht</p>
         </div>
@@ -824,7 +836,7 @@
     </section>
 
     <footer>
-      <p>Studiocalculator v0.6.0 · Installierbar und lokal nutzbar</p>
+      <p>Studiocalculator v0.6.1 · Installierbar und lokal nutzbar</p>
     </footer>
 
     <aside class="update-notice" id="updateNotice" aria-live="polite" hidden>

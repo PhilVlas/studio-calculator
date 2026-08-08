@@ -1,6 +1,6 @@
 # Studiocalculator
 
-Studiocalculator v0.6.0 ist eine kleine, installierbare Web-App für die schnelle
+Studiocalculator v0.6.1 ist eine kleine, installierbare Web-App für die schnelle
 Rentabilitäts-, Kapitalbedarfs- und Finanzierungsrechnung von
 Fitnessstudio-Projekten.
 
@@ -28,6 +28,7 @@ Danach `http://localhost:8080` im Browser öffnen.
 studio-calculator/
 ├── .github/workflows/pages.yml  # Veröffentlichung über GitHub Pages
 ├── docs/REQUIREMENTS.md         # Fachliche Spezifikation
+├── assets/                      # Originale Marken- und Bilddateien
 ├── icons/                       # App-Symbole für Installation und Home-Bildschirm
 ├── app.js                       # Berechnungslogik
 ├── index.html                   # Oberfläche und Inhalte
@@ -46,7 +47,7 @@ Zentrale für Gespräche, Anforderungen und Entscheidungen.
 Auf Smartphone, Tablet und Computer kann die über GitHub Pages veröffentlichte
 App direkt im Browser genutzt und auf geeigneten Geräten installiert werden.
 Nach dem ersten erfolgreichen Aufruf steht die App auch ohne Internetverbindung
-zur Verfügung. Der aktuelle Entwurf und benannte Projekte werden in v0.6.0 lokal
+zur Verfügung. Der aktuelle Entwurf und benannte Projekte werden in v0.6.1 lokal
 im jeweiligen Browser gespeichert. Ein Freigabelink ermöglicht den
 direkten Wechsel auf ein anderes Gerät oder die Weitergabe an Teammitglieder;
 eine automatische Cloud-Synchronisierung findet weiterhin nicht statt.

@@ -32,7 +32,7 @@ const defaults = {
   scenarioVariance: 15,
 };
 
-const APP_VERSION = "0.6.0";
+const APP_VERSION = "0.6.1";
 const PROJECT_FILE_FORMAT = "studiocalculator-project";
 const LEGACY_PROJECT_FILE_FORMATS = new Set(["studio-calculator-project"]);
 const PROJECT_SCHEMA_VERSION = 1;

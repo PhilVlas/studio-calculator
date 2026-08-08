@@ -77,7 +77,22 @@ footer {
 }
 
 .hero .eyebrow {
+  margin: 0;
   color: var(--green);
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 17px;
+}
+
+.app-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 11px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 h1,
@@ -1521,12 +1536,25 @@ footer {
   }
 
   .print-brand {
-    margin: 0 0 2mm;
+    margin: 0;
     color: #36754d;
     font-size: 7pt;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+  }
+
+  .print-brand-row {
+    display: flex;
+    align-items: center;
+    gap: 2.5mm;
+    margin-bottom: 2mm;
+  }
+
+  .print-brand-row img {
+    width: 9mm;
+    height: 9mm;
+    border-radius: 2mm;
   }
 
   .print-header h1 {

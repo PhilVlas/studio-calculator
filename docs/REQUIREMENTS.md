@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.6.0
+v0.6.1
 
 ## Ziel
 
@@ -254,7 +254,7 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.6.0 berücksichtigt insbesondere noch nicht:
+Version 0.6.1 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen
