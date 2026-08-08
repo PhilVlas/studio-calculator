@@ -1,6 +1,6 @@
 # Studio Calculator
 
-Studio Calculator v0.3 ist eine kleine, statische Web-App für die schnelle
+Studio Calculator v0.4 ist eine kleine, statische Web-App für die schnelle
 Rentabilitäts-, Kapitalbedarfs- und Finanzierungsrechnung von
 Fitnessstudio-Projekten.
 
@@ -40,7 +40,7 @@ geklont und vor der Arbeit aktualisiert. ChatGPT-Projekt/Work dient parallel als
 Zentrale für Gespräche, Anforderungen und Entscheidungen.
 
 Auf Smartphone und Tablet kann die über GitHub Pages veröffentlichte App direkt
-im Browser genutzt werden. Die Eingaben werden in v0.3 nicht zwischen Geräten
+im Browser genutzt werden. Die Eingaben werden in v0.4 nicht zwischen Geräten
 synchronisiert.
 
 ## Enthaltene Berechnungen
@@ -53,8 +53,11 @@ synchronisiert.
 - Cashflow nach Finanzierung, DSCR und vereinfachte Eigenkapitalrendite
 - Vergleich von vorsichtigem, Basis- und optimistischem Mitgliederszenario
 - linearer Mitgliederhochlauf mit monatlichem und kumuliertem Cashflow
+- druckoptimierter PDF-Bericht mit Annahmen, Kennzahlen, Szenarien und Hochlauf
 
-Als nächste Ausbaustufe ist eine PDF-Ausgabe vorgesehen.
+Für einen PDF-Bericht in der App **PDF-Bericht erstellen** wählen und im
+anschließenden Druckdialog **Als PDF speichern** auswählen. Alle Berichtsdaten
+werden weiterhin ausschließlich im Browser verarbeitet.
 
 ## GitHub Pages
 

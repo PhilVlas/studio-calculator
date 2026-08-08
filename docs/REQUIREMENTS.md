@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.3
+v0.4
 
 ## Ziel
 
@@ -15,7 +15,7 @@ zu müssen.
 
 ## Ziel der aktuellen Version
 
-Version 0.3 bleibt technisch bewusst einfach:
+Version 0.4 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
@@ -153,6 +153,16 @@ reguläre Tilgungsphase nach einer gegebenenfalls tilgungsfreien Anlaufzeit.
 - Liquiditätsbedarf im Hochlauf als höchster kumulierter negativer Cashflow
 - erster Monat mit nicht negativem Cashflow nach Finanzierung
 
+### PDF-Bericht
+
+- Der Bericht wird aus den aktuell sichtbaren Eingaben und Ergebnissen erzeugt.
+- Die Ausgabe nutzt den Druckdialog des Browsers und kann dort als PDF
+  gespeichert werden.
+- Der Bericht enthält Projekt- und Kostendaten, zentrale Ergebnisse,
+  Investition und Finanzierung, den Szenariovergleich sowie die monatliche
+  Hochlauf-Tabelle.
+- Die Berichtserstellung überträgt keine Projektdaten an einen Server.
+
 ## Ergebnisdarstellung
 
 Die Anwendung zeigt:
@@ -170,6 +180,7 @@ Die Anwendung zeigt:
 - geschätzte Gesamtzinsen und rechnerische Eigenkapital-Amortisation
 - drei vergleichbare Mitgliederszenarien mit Betriebsergebnis und Cashflow
 - Hochlauf-Zusammenfassung und monatsgenaue Cashflow-Tabelle
+- druckoptimierter PDF-Bericht mit Erstellungsdatum und fachlichem Hinweis
 - kurze textliche Einordnung der wichtigsten Werte
 
 ## Plattform- und Repository-Konzept
@@ -183,13 +194,13 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.3 berücksichtigt insbesondere noch nicht:
+Version 0.4 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen
 - Abschreibungen oder Ertragsteuern
 - getrennte fixe und variable Kosten
-- gespeicherte Szenarioversionen, PDF-Export oder Projektspeicherung
+- gespeicherte Szenarioversionen oder Projektspeicherung
 - Benutzerkonten und geräteübergreifend synchronisierte Eingaben
 
 Die Ergebnisse sind eine überschlägige Entscheidungshilfe und keine Finanz-,
@@ -205,3 +216,5 @@ Steuer- oder Rechtsberatung.
 5. Die App sendet keine eingegebenen Daten an einen Server.
 6. Das Repository enthält eine nachvollziehbare Anleitung und eine vorbereitete
    GitHub-Pages-Veröffentlichung.
+7. Der PDF-Bericht lässt sich über den Browser-Druckdialog speichern und enthält
+   die zum Erstellungszeitpunkt aktuellen Projektwerte.

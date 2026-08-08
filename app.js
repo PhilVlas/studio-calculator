@@ -40,6 +40,7 @@ const cashflowResult = document.querySelector("#cashflowResult");
 const cashflowMap = document.querySelector("#cashflowMap");
 const cashflowTableBody = document.querySelector("#cashflowTableBody");
 let lastCapitalRequirement = 0;
+let lastReportData = null;
 
 const euro = new Intl.NumberFormat("de-DE", {
   style: "currency",
@@ -190,6 +191,14 @@ function renderProjection({
       return row;
     }),
   );
+
+  return {
+    months,
+    cumulativeCashflow,
+    liquidityNeed: Math.abs(lowestCumulativeCashflow),
+    firstPositiveMonth,
+    endMembers: finalMonth.memberCount,
+  };
 }
 
 function syncRentFields(sourceId) {
@@ -306,14 +315,17 @@ function calculate() {
   setText("scenarioConservativeAssumption", `−${varianceLabel} % Mitglieder`);
   setText("scenarioOptimisticAssumption", `+${varianceLabel} % Mitglieder`);
 
-  renderProjection({
-    startMembers: value("startMembers"),
+  const startMembers = value("startMembers");
+  const rampMonths = Math.max(1, Math.min(60, Math.round(value("rampMonths"))));
+  const projectionMonths = Math.max(
+    1,
+    Math.min(60, Math.round(value("projectionMonths"))),
+  );
+  const projection = renderProjection({
+    startMembers,
     targetMembers: members,
-    rampMonths: Math.max(1, Math.min(60, Math.round(value("rampMonths")))),
-    projectionMonths: Math.max(
-      1,
-      Math.min(60, Math.round(value("projectionMonths"))),
-    ),
+    rampMonths,
+    projectionMonths,
     grossFee,
     vatRate,
     monthlyCosts,
@@ -382,6 +394,49 @@ function calculate() {
   resultCard.dataset.state = state;
   setText("assessment", assessment);
 
+  lastReportData = {
+    projectName: projectName || "Unbenanntes Projekt",
+    assessment,
+    area,
+    rentPerArea: value("rentPerArea"),
+    rent,
+    utilities,
+    members,
+    grossFee,
+    vatRate,
+    personnel,
+    marketing: value("marketing"),
+    cleaning: value("cleaning"),
+    otherCosts: value("otherCosts"),
+    monthlyCosts,
+    netRevenue,
+    monthlyResult,
+    annualResult,
+    margin,
+    breakEven,
+    resultPerArea,
+    investment,
+    liquidityReserve,
+    capitalRequirement,
+    equity,
+    bankLoan,
+    grants,
+    leaseFinancing,
+    financingGap,
+    loanInterest: value("loanInterest"),
+    loanTermYears: value("loanTermYears"),
+    monthlyDebtService,
+    cashflowAfterFinancing,
+    conservativeScenario,
+    baseScenario,
+    optimisticScenario,
+    scenarioVariance,
+    startMembers,
+    rampMonths,
+    projectionMonths,
+    projection,
+  };
+
   const comparisonMax = Math.max(netRevenue, monthlyCosts, 1);
   document.querySelector("#revenueBar").style.width =
     `${(netRevenue / comparisonMax) * 100}%`;
@@ -448,6 +503,130 @@ function calculate() {
   );
 }
 
+function reportRow(values, negativeIndexes = []) {
+  const row = document.createElement("tr");
+  values.forEach((content, index) => {
+    const cell = document.createElement(index === 0 ? "th" : "td");
+    if (index === 0) cell.scope = "row";
+    if (negativeIndexes.includes(index)) cell.dataset.state = "negative";
+    cell.textContent = content;
+    row.append(cell);
+  });
+  return row;
+}
+
+function preparePrintReport() {
+  if (lastReportData === null) return;
+  const data = lastReportData;
+  const fundingBalance =
+    data.financingGap > 0.5
+      ? `${euro.format(data.financingGap)} Lücke`
+      : data.financingGap < -0.5
+        ? `${euro.format(Math.abs(data.financingGap))} Überdeckung`
+        : "Vollständig gedeckt";
+
+  setText("printProjectName", data.projectName);
+  setText(
+    "printGeneratedAt",
+    new Intl.DateTimeFormat("de-DE", { dateStyle: "long" }).format(new Date()),
+  );
+  setText("printAssessment", data.assessment);
+  setText("printMonthlyResult", euro.format(data.monthlyResult));
+  setText("printCashflow", euro.format(data.cashflowAfterFinancing));
+  setText("printCapitalRequirement", euro.format(data.capitalRequirement));
+
+  setText("printArea", `${decimal.format(data.area)} m²`);
+  setText("printRentPerArea", `${euroDetailed.format(data.rentPerArea)} / m²`);
+  setText("printRent", `${euro.format(data.rent)} / Monat`);
+  setText("printMembers", data.members.toLocaleString("de-DE"));
+  setText("printGrossFee", euroDetailed.format(data.grossFee));
+  setText("printNetRevenue", euro.format(data.netRevenue));
+  setText("printMonthlyCosts", euro.format(data.monthlyCosts));
+  setText(
+    "printBreakEven",
+    data.breakEven === null
+      ? "Nicht berechenbar"
+      : `${data.breakEven.toLocaleString("de-DE")} Mitglieder`,
+  );
+
+  setText("printPersonnel", euro.format(data.personnel));
+  setText("printUtilities", euro.format(data.utilities));
+  setText("printMarketing", euro.format(data.marketing));
+  setText("printCleaning", euro.format(data.cleaning));
+  setText("printOtherCosts", euro.format(data.otherCosts));
+  setText("printMargin", data.margin === null ? "–" : `${decimal.format(data.margin)} %`);
+  setText(
+    "printResultPerArea",
+    data.resultPerArea === null ? "–" : `${euroDetailed.format(data.resultPerArea)} / m²`,
+  );
+  setText("printAnnualResult", euro.format(data.annualResult));
+
+  setText("printInvestment", euro.format(data.investment));
+  setText("printReserve", euro.format(data.liquidityReserve));
+  setText("printEquity", euro.format(data.equity));
+  setText("printLoan", euro.format(data.bankLoan));
+  setText("printGrants", euro.format(data.grants));
+  setText("printLeaseFinancing", euro.format(data.leaseFinancing));
+  setText("printFundingBalance", fundingBalance);
+  setText("printInterest", `${decimal.format(data.loanInterest)} % p. a.`);
+  setText("printTerm", `${decimal.format(data.loanTermYears)} Jahre`);
+  setText("printDebtService", `${euro.format(data.monthlyDebtService)} / Monat`);
+
+  const variance = decimal.format(data.scenarioVariance * 100);
+  const scenarioRows = [
+    [`Vorsichtig (−${variance} %)`, data.conservativeScenario],
+    ["Basis", data.baseScenario],
+    [`Optimistisch (+${variance} %)`, data.optimisticScenario],
+  ].map(([label, scenario]) =>
+    reportRow(
+      [
+        label,
+        Math.round(scenario.memberCount).toLocaleString("de-DE"),
+        euro.format(scenario.operatingResult),
+        euro.format(scenario.cashflow),
+      ],
+      scenario.cashflow < 0 ? [3] : [],
+    ),
+  );
+  document.querySelector("#printScenarioRows").replaceChildren(...scenarioRows);
+
+  setText("printStartMembers", Math.round(data.startMembers).toLocaleString("de-DE"));
+  setText("printTargetMembers", Math.round(data.members).toLocaleString("de-DE"));
+  setText("printRampMonths", `${data.rampMonths.toLocaleString("de-DE")} Monate`);
+  setText(
+    "printProjectionMonths",
+    `${data.projectionMonths.toLocaleString("de-DE")} Monate`,
+  );
+  setText(
+    "printPositiveMonth",
+    data.projection.firstPositiveMonth === null
+      ? "Nicht erreicht"
+      : `Monat ${data.projection.firstPositiveMonth}`,
+  );
+  setText("printRampNeed", euro.format(data.projection.liquidityNeed));
+  setText("printProjectionCumulative", euro.format(data.projection.cumulativeCashflow));
+
+  document.querySelector("#printCashflowRows").replaceChildren(
+    ...data.projection.months.map((month) =>
+      reportRow(
+        [
+          `Monat ${month.month}`,
+          Math.round(month.memberCount).toLocaleString("de-DE"),
+          euro.format(month.operatingResult),
+          euro.format(month.cashflow),
+          euro.format(month.cumulativeCashflow),
+        ],
+        [
+          ...(month.cashflow < 0 ? [3] : []),
+          ...(month.cumulativeCashflow < 0 ? [4] : []),
+        ],
+      ),
+    ),
+  );
+
+  document.querySelector("#printReport").setAttribute("aria-hidden", "false");
+}
+
 form.addEventListener("input", (event) => {
   syncRentFields(event.target.id);
   calculate();
@@ -470,5 +649,23 @@ document.querySelector("#balanceFinancing").addEventListener("click", () => {
   calculate();
   document.querySelector("#bankLoan").focus();
 });
+
+document.querySelector("#pdfButton").addEventListener("click", () => {
+  preparePrintReport();
+  const originalTitle = document.title;
+  const safeProjectName = lastReportData.projectName.replace(/[\\/:*?"<>|]/g, "-");
+  document.title = `${safeProjectName} – Studio Calculator`;
+  window.addEventListener(
+    "afterprint",
+    () => {
+      document.title = originalTitle;
+      document.querySelector("#printReport").setAttribute("aria-hidden", "true");
+    },
+    { once: true },
+  );
+  window.print();
+});
+
+window.addEventListener("beforeprint", preparePrintReport);
 
 calculate();

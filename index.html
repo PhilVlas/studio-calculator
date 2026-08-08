@@ -9,14 +9,14 @@
     />
     <meta name="theme-color" content="#10231f" />
     <title>Studio Calculator</title>
-    <link rel="stylesheet" href="styles.css?v=0.3.0" />
-    <script src="app.js?v=0.3.0" defer></script>
+    <link rel="stylesheet" href="styles.css?v=0.4.0" />
+    <script src="app.js?v=0.4.0" defer></script>
   </head>
   <body>
     <header class="hero">
       <div class="hero__content">
         <div>
-          <p class="eyebrow">Studio Calculator · v0.3</p>
+          <p class="eyebrow">Studio Calculator · v0.4</p>
           <h1>Trägt sich der Standort?</h1>
           <p class="hero__intro">
             Eine schnelle erste Einschätzung zu Ergebnis, Break-even und
@@ -37,9 +37,14 @@
             <p class="section-number">01</p>
             <h2 id="inputs-title">Projektannahmen</h2>
           </div>
-          <button class="text-button" id="resetButton" type="button">
-            Beispielwerte laden
-          </button>
+          <div class="panel-actions">
+            <button class="text-button" id="resetButton" type="button">
+              Beispielwerte laden
+            </button>
+            <button class="primary-button" id="pdfButton" type="button">
+              PDF-Bericht erstellen
+            </button>
+          </div>
         </div>
 
         <form id="calculatorForm">
@@ -615,8 +620,140 @@
       </section>
     </section>
 
+    <section class="print-report" id="printReport" aria-hidden="true">
+      <header class="print-header">
+        <div>
+          <p class="print-brand">Studio Calculator · v0.4</p>
+          <h1 id="printProjectName">Studio Musterstadt</h1>
+          <p>Wirtschaftlichkeits- und Finanzierungsübersicht</p>
+        </div>
+        <div class="print-meta">
+          <span>Erstellt am</span>
+          <strong id="printGeneratedAt">–</strong>
+        </div>
+      </header>
+
+      <section class="print-summary">
+        <article>
+          <span>Bewertung</span>
+          <strong id="printAssessment">–</strong>
+        </article>
+        <article>
+          <span>Betriebsergebnis / Monat</span>
+          <strong id="printMonthlyResult">–</strong>
+        </article>
+        <article>
+          <span>Cashflow nach Finanzierung</span>
+          <strong id="printCashflow">–</strong>
+        </article>
+        <article>
+          <span>Kapitalbedarf</span>
+          <strong id="printCapitalRequirement">–</strong>
+        </article>
+      </section>
+
+      <div class="print-two-column">
+        <section class="print-block">
+          <h2>Projekt &amp; Betrieb</h2>
+          <dl class="print-data-list">
+            <div><dt>Fläche</dt><dd id="printArea">–</dd></div>
+            <div><dt>Kaltmiete je m²</dt><dd id="printRentPerArea">–</dd></div>
+            <div><dt>Kaltmiete / Monat</dt><dd id="printRent">–</dd></div>
+            <div><dt>Mitglieder</dt><dd id="printMembers">–</dd></div>
+            <div><dt>Monatsbeitrag brutto</dt><dd id="printGrossFee">–</dd></div>
+            <div><dt>Nettoumsatz / Monat</dt><dd id="printNetRevenue">–</dd></div>
+            <div><dt>Laufende Kosten / Monat</dt><dd id="printMonthlyCosts">–</dd></div>
+            <div><dt>Break-even</dt><dd id="printBreakEven">–</dd></div>
+          </dl>
+        </section>
+
+        <section class="print-block">
+          <h2>Laufende Kosten</h2>
+          <dl class="print-data-list">
+            <div><dt>Personal gesamt</dt><dd id="printPersonnel">–</dd></div>
+            <div><dt>Nebenkosten</dt><dd id="printUtilities">–</dd></div>
+            <div><dt>Marketing &amp; Vertrieb</dt><dd id="printMarketing">–</dd></div>
+            <div><dt>Reinigung</dt><dd id="printCleaning">–</dd></div>
+            <div><dt>Sonstige Betriebskosten</dt><dd id="printOtherCosts">–</dd></div>
+            <div><dt>Ergebnismarge</dt><dd id="printMargin">–</dd></div>
+            <div><dt>Operatives Ergebnis je m²</dt><dd id="printResultPerArea">–</dd></div>
+            <div><dt>Jahresergebnis</dt><dd id="printAnnualResult">–</dd></div>
+          </dl>
+        </section>
+      </div>
+
+      <section class="print-block">
+        <h2>Investition &amp; Finanzierung</h2>
+        <div class="print-two-column print-two-column--inside">
+          <dl class="print-data-list">
+            <div><dt>Einmalinvestitionen</dt><dd id="printInvestment">–</dd></div>
+            <div><dt>Liquiditätsreserve</dt><dd id="printReserve">–</dd></div>
+            <div><dt>Eigenkapital</dt><dd id="printEquity">–</dd></div>
+            <div><dt>Bankdarlehen</dt><dd id="printLoan">–</dd></div>
+            <div><dt>Fördermittel</dt><dd id="printGrants">–</dd></div>
+          </dl>
+          <dl class="print-data-list">
+            <div><dt>Leasingfinanzierter Anteil</dt><dd id="printLeaseFinancing">–</dd></div>
+            <div><dt>Finanzierungssaldo</dt><dd id="printFundingBalance">–</dd></div>
+            <div><dt>Sollzins</dt><dd id="printInterest">–</dd></div>
+            <div><dt>Laufzeit</dt><dd id="printTerm">–</dd></div>
+            <div><dt>Schuldendienst / Monat</dt><dd id="printDebtService">–</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="print-block">
+        <h2>Szenariovergleich</h2>
+        <table class="print-table">
+          <thead>
+            <tr>
+              <th>Szenario</th>
+              <th>Mitglieder</th>
+              <th>Betriebsergebnis</th>
+              <th>Cashflow nach Finanzierung</th>
+            </tr>
+          </thead>
+          <tbody id="printScenarioRows"></tbody>
+        </table>
+      </section>
+
+      <section class="print-block print-page-break">
+        <h2>Cashflow-Hochlauf</h2>
+        <dl class="print-projection-summary">
+          <div><dt>Startmitglieder</dt><dd id="printStartMembers">–</dd></div>
+          <div><dt>Basisziel</dt><dd id="printTargetMembers">–</dd></div>
+          <div><dt>Hochlaufdauer</dt><dd id="printRampMonths">–</dd></div>
+          <div><dt>Betrachtung</dt><dd id="printProjectionMonths">–</dd></div>
+          <div><dt>Positiver Cashflow ab</dt><dd id="printPositiveMonth">–</dd></div>
+          <div><dt>Liquiditätsbedarf</dt><dd id="printRampNeed">–</dd></div>
+          <div><dt>Kumulierter Cashflow</dt><dd id="printProjectionCumulative">–</dd></div>
+        </dl>
+
+        <table class="print-table print-cashflow-table">
+          <thead>
+            <tr>
+              <th>Monat</th>
+              <th>Mitglieder</th>
+              <th>Betriebsergebnis</th>
+              <th>Cashflow</th>
+              <th>Kumuliert</th>
+            </tr>
+          </thead>
+          <tbody id="printCashflowRows"></tbody>
+        </table>
+      </section>
+
+      <footer class="print-footer">
+        <p>
+          Die Kalkulation ist eine überschlägige Entscheidungshilfe und keine
+          Finanz-, Steuer- oder Rechtsberatung. Alle Werte basieren auf den zum
+          Erstellungszeitpunkt eingegebenen Annahmen.
+        </p>
+      </footer>
+    </section>
+
     <footer>
-      <p>Studio Calculator v0.3 · Statische Browser-App ohne Datenspeicherung</p>
+      <p>Studio Calculator v0.4 · Statische Browser-App ohne Datenspeicherung</p>
     </footer>
   </body>
 </html>
