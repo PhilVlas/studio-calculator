@@ -317,6 +317,12 @@ h2 {
   background: var(--forest);
 }
 
+.storage-button--share {
+  color: #245638;
+  border-color: rgba(54, 117, 77, 0.38);
+  background: #e8f3e3;
+}
+
 .storage-button--danger {
   color: #9b4134;
 }
@@ -1283,6 +1289,10 @@ footer {
   .project-storage__files {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .project-storage__files .storage-button--share {
+    grid-column: 1 / -1;
   }
 
   .field-grid,

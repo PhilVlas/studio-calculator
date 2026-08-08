@@ -9,14 +9,14 @@
     />
     <meta name="theme-color" content="#10231f" />
     <title>Studio Calculator</title>
-    <link rel="stylesheet" href="styles.css?v=0.5.0" />
-    <script src="app.js?v=0.5.0" defer></script>
+    <link rel="stylesheet" href="styles.css?v=0.5.1" />
+    <script src="app.js?v=0.5.1" defer></script>
   </head>
   <body>
     <header class="hero">
       <div class="hero__content">
         <div>
-          <p class="eyebrow">Studio Calculator · v0.5</p>
+          <p class="eyebrow">Studio Calculator · v0.5.1</p>
           <h1>Trägt sich der Standort?</h1>
           <p class="hero__intro">
             Eine schnelle erste Einschätzung zu Ergebnis, Break-even und
@@ -59,8 +59,9 @@
           </div>
           <p class="project-storage__intro">
             Änderungen werden automatisch auf diesem Gerät gespeichert. Benannte
-            Projekte bleiben in der lokalen Projektliste; über eine Projektdatei
-            lassen sie sich auf einem anderen Gerät öffnen.
+            Projekte bleiben in der lokalen Projektliste. Ein Freigabelink öffnet
+            das Projekt direkt auf einem anderen Gerät; die Projektdatei dient als
+            zusätzliche Sicherung.
           </p>
 
           <div class="project-storage__controls">
@@ -83,8 +84,11 @@
             </div>
 
             <div class="project-storage__files" aria-label="Projektdateien">
-              <button class="storage-button" id="shareProjectButton" type="button">
-                Projektdatei weitergeben
+              <button class="storage-button storage-button--share" id="shareLinkButton" type="button">
+                Freigabelink teilen
+              </button>
+              <button class="storage-button" id="downloadProjectButton" type="button">
+                Projektdatei herunterladen
               </button>
               <button class="storage-button" id="openProjectFileButton" type="button">
                 Projektdatei öffnen
@@ -676,7 +680,7 @@
     <section class="print-report" id="printReport" aria-hidden="true">
       <header class="print-header">
         <div>
-          <p class="print-brand">Studio Calculator · v0.5</p>
+          <p class="print-brand">Studio Calculator · v0.5.1</p>
           <h1 id="printProjectName">Studio Musterstadt</h1>
           <p>Wirtschaftlichkeits- und Finanzierungsübersicht</p>
         </div>
@@ -806,7 +810,7 @@
     </section>
 
     <footer>
-      <p>Studio Calculator v0.5 · Lokale Speicherung ohne Serverübertragung</p>
+      <p>Studio Calculator v0.5.1 · Lokale Speicherung ohne Serverübertragung</p>
     </footer>
   </body>
 </html>

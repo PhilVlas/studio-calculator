@@ -1,6 +1,6 @@
 # Studio Calculator
 
-Studio Calculator v0.5 ist eine kleine, statische Web-App für die schnelle
+Studio Calculator v0.5.1 ist eine kleine, statische Web-App für die schnelle
 Rentabilitäts-, Kapitalbedarfs- und Finanzierungsrechnung von
 Fitnessstudio-Projekten.
 
@@ -41,9 +41,9 @@ Zentrale für Gespräche, Anforderungen und Entscheidungen.
 
 Auf Smartphone und Tablet kann die über GitHub Pages veröffentlichte App direkt
 im Browser genutzt werden. Der aktuelle Entwurf und benannte Projekte werden in
-v0.5 lokal im jeweiligen Browser gespeichert. Eine Projektdatei ermöglicht den
-Wechsel auf ein anderes Gerät oder die Weitergabe an Teammitglieder; eine
-automatische Cloud-Synchronisierung findet weiterhin nicht statt.
+v0.5.1 lokal im jeweiligen Browser gespeichert. Ein Freigabelink ermöglicht den
+direkten Wechsel auf ein anderes Gerät oder die Weitergabe an Teammitglieder;
+eine automatische Cloud-Synchronisierung findet weiterhin nicht statt.
 
 ## Projekte speichern und weitergeben
 
@@ -51,14 +51,19 @@ automatische Cloud-Synchronisierung findet weiterhin nicht statt.
 - **Projekt speichern** legt den aktuellen Stand unter seinem Projektnamen in
   der lokalen Projektliste ab oder aktualisiert ihn.
 - Ein ausgewähltes lokales Projekt kann geladen oder vom Gerät gelöscht werden.
-- **Projektdatei weitergeben** öffnet auf geeigneten Mobilgeräten das Teilen-Menü
-  und lädt die Datei auf anderen Geräten herunter.
+- **Freigabelink teilen** öffnet auf geeigneten Geräten das Teilen-Menü. Falls
+  dieses nicht verfügbar ist, wird der Link kopiert.
+- Der empfangene Freigabelink öffnet das Projekt direkt im Studio Calculator und
+  speichert es auf dem Zielgerät zunächst als aktuellen Entwurf.
+- **Projektdatei herunterladen** erzeugt eine zusätzliche lokale Sicherung.
 - **Projektdatei öffnen** übernimmt eine zuvor erzeugte
   `.studio-calculator.json`-Datei und speichert sie als aktuellen Entwurf.
 
-Die Projektdatei enthält ausschließlich die eingegebenen Calculator-Werte und
-technische Versionsangaben. Sie wird vollständig im Browser erzeugt und nur
-dann weitergegeben, wenn die nutzende Person dies ausdrücklich auslöst.
+Freigabelink und Projektdatei enthalten ausschließlich die eingegebenen
+Calculator-Werte und technische Versionsangaben. Beides wird vollständig im
+Browser erzeugt und nur dann weitergegeben, wenn die nutzende Person dies
+ausdrücklich auslöst. Der Datenabschnitt hinter `#` wird beim Öffnen eines Links
+nicht an den Webserver übertragen.
 
 ## Enthaltene Berechnungen
 

@@ -32,10 +32,12 @@ const defaults = {
   scenarioVariance: 15,
 };
 
-const APP_VERSION = "0.5";
+const APP_VERSION = "0.5.1";
 const PROJECT_FILE_FORMAT = "studio-calculator-project";
 const PROJECT_SCHEMA_VERSION = 1;
 const MAX_PROJECT_FILE_SIZE = 100 * 1024;
+const MAX_SHARE_PAYLOAD_LENGTH = 12000;
+const SHARE_HASH_KEY = "project";
 const STORAGE_KEYS = {
   draft: "studio-calculator:draft:v1",
   projects: "studio-calculator:projects:v1",
@@ -339,16 +341,33 @@ function deleteSelectedProject() {
   setStorageStatus(`„${project.name}“ lokal gelöscht`, "neutral");
 }
 
-function buildProjectFile() {
+function buildProjectPayload() {
   const data = collectProjectData();
   const name = data.projectName || "Unbenanntes Projekt";
-  const payload = {
+  return {
     format: PROJECT_FILE_FORMAT,
     schemaVersion: PROJECT_SCHEMA_VERSION,
     appVersion: APP_VERSION,
     exportedAt: new Date().toISOString(),
     project: { name, data },
   };
+}
+
+function validateProjectPayload(payload) {
+  if (
+    payload?.format !== PROJECT_FILE_FORMAT ||
+    payload.schemaVersion !== PROJECT_SCHEMA_VERSION ||
+    !payload.project?.data ||
+    typeof payload.project.data !== "object"
+  ) {
+    throw new Error("Unbekanntes Projektformat");
+  }
+  return normalizeProjectData(payload.project.data);
+}
+
+function buildProjectFile() {
+  const payload = buildProjectPayload();
+  const name = payload.project.name;
   const safeName = name
     .normalize("NFKD")
     .replace(/[^a-zA-Z0-9äöüÄÖÜß -]/g, "")
@@ -362,6 +381,34 @@ function buildProjectFile() {
   };
 }
 
+function encodeProjectPayload(payload) {
+  const bytes = new TextEncoder().encode(JSON.stringify(payload));
+  let binary = "";
+  for (let start = 0; start < bytes.length; start += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(start, start + 8192));
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function decodeProjectPayload(encoded) {
+  if (!encoded || encoded.length > MAX_SHARE_PAYLOAD_LENGTH) {
+    throw new Error("Ungültiger Freigabelink");
+  }
+  const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+function buildShareLink() {
+  const payload = buildProjectPayload();
+  const url = new URL(window.location.href);
+  url.search = "";
+  url.hash = `${SHARE_HASH_KEY}=${encodeProjectPayload(payload)}`;
+  return { name: payload.project.name, url: url.toString() };
+}
+
 function downloadProjectFile(blob, filename) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -373,33 +420,17 @@ function downloadProjectFile(blob, filename) {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-async function shareProjectFile() {
-  const projectFile = buildProjectFile();
-  const canCreateFile = typeof File === "function";
-  const file = canCreateFile
-    ? new File([projectFile.blob], projectFile.filename, { type: "application/json" })
-    : null;
-  let supportsFileSharing = false;
+async function shareProjectLink() {
+  const sharedProject = buildShareLink();
 
-  try {
-    supportsFileSharing = Boolean(
-      file &&
-        typeof navigator.share === "function" &&
-        typeof navigator.canShare === "function" &&
-        navigator.canShare({ files: [file] }),
-    );
-  } catch {
-    supportsFileSharing = false;
-  }
-
-  if (supportsFileSharing) {
+  if (typeof navigator.share === "function") {
     try {
       await navigator.share({
-        title: `${projectFile.name} · Studio Calculator`,
-        text: "Studio-Calculator-Projektdatei zum Öffnen und Weiterbearbeiten.",
-        files: [file],
+        title: `${sharedProject.name} · Studio Calculator`,
+        text: "Studio-Calculator-Projekt direkt öffnen und weiterbearbeiten.",
+        url: sharedProject.url,
       });
-      setStorageStatus("Projektdatei zur Weitergabe geöffnet", "saved");
+      setStorageStatus("Freigabelink zur Weitergabe geöffnet", "saved");
       return;
     } catch (error) {
       if (error?.name === "AbortError") {
@@ -409,8 +440,19 @@ async function shareProjectFile() {
     }
   }
 
+  try {
+    await navigator.clipboard.writeText(sharedProject.url);
+    setStorageStatus("Freigabelink kopiert – jetzt versenden", "saved");
+  } catch {
+    window.prompt("Freigabelink kopieren:", sharedProject.url);
+    setStorageStatus("Freigabelink zum Kopieren geöffnet", "neutral");
+  }
+}
+
+function downloadCurrentProjectFile() {
+  const projectFile = buildProjectFile();
   downloadProjectFile(projectFile.blob, projectFile.filename);
-  setStorageStatus("Projektdatei heruntergeladen – jetzt versenden", "saved");
+  setStorageStatus("Projektdatei als Sicherung heruntergeladen", "saved");
 }
 
 async function openProjectFile(file) {
@@ -420,18 +462,11 @@ async function openProjectFile(file) {
       throw new Error("Die Projektdatei ist zu groß");
     }
     const payload = JSON.parse(await file.text());
-    if (
-      payload?.format !== PROJECT_FILE_FORMAT ||
-      payload.schemaVersion !== PROJECT_SCHEMA_VERSION ||
-      !payload.project?.data ||
-      typeof payload.project.data !== "object"
-    ) {
-      throw new Error("Unbekanntes Projektformat");
-    }
+    const projectData = validateProjectPayload(payload);
 
     activeProjectId = null;
     window.clearTimeout(autosaveTimer);
-    applyProjectData(payload.project.data);
+    applyProjectData(projectData);
     savedProjectSelect.value = "";
     updateProjectButtons();
     saveDraft({ announce: false });
@@ -445,6 +480,30 @@ async function openProjectFile(file) {
   }
 }
 
+function openSharedProjectFromUrl() {
+  const parameters = new URLSearchParams(window.location.hash.slice(1));
+  const encodedProject = parameters.get(SHARE_HASH_KEY);
+  if (encodedProject === null) return "none";
+
+  const cleanUrl = `${window.location.pathname}${window.location.search}`;
+  window.history.replaceState(null, "", cleanUrl);
+
+  try {
+    const payload = decodeProjectPayload(encodedProject);
+    const projectData = validateProjectPayload(payload);
+    activeProjectId = null;
+    applyProjectData(projectData);
+    savedProjectSelect.value = "";
+    updateProjectButtons();
+    saveDraft({ announce: false });
+    const projectName = projectData.projectName || "Unbenanntes Projekt";
+    setStorageStatus(`„${projectName}“ über Freigabelink geöffnet`, "saved");
+    return "loaded";
+  } catch {
+    return "invalid";
+  }
+}
+
 function initializeProjectStorage() {
   storageAvailable = checkStorageAvailability();
   if (!storageAvailable) {
@@ -452,9 +511,14 @@ function initializeProjectStorage() {
     document.querySelector("#saveProjectButton").disabled = true;
   }
   renderSavedProjects();
+  const sharedProjectState = openSharedProjectFromUrl();
+  if (sharedProjectState === "loaded") return;
   if (!loadDraft()) {
     calculate();
     if (storageAvailable) saveDraft();
+  }
+  if (sharedProjectState === "invalid") {
+    setStorageStatus("Dieser Freigabelink ist ungültig oder beschädigt", "error");
   }
 }
 
@@ -1043,8 +1107,12 @@ loadProjectButton.addEventListener("click", loadSelectedProject);
 
 deleteProjectButton.addEventListener("click", deleteSelectedProject);
 
-document.querySelector("#shareProjectButton").addEventListener("click", () => {
-  shareProjectFile();
+document.querySelector("#shareLinkButton").addEventListener("click", () => {
+  shareProjectLink();
+});
+
+document.querySelector("#downloadProjectButton").addEventListener("click", () => {
+  downloadCurrentProjectFile();
 });
 
 document.querySelector("#openProjectFileButton").addEventListener("click", () => {

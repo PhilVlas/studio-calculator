@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.5
+v0.5.1
 
 ## Ziel
 
@@ -15,7 +15,7 @@ zu müssen.
 
 ## Ziel der aktuellen Version
 
-Version 0.5 bleibt technisch bewusst einfach:
+Version 0.5.1 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
@@ -23,6 +23,7 @@ Version 0.5 bleibt technisch bewusst einfach:
 - automatische lokale Speicherung des aktuellen Entwurfs
 - lokale Liste benannter Projekte
 - Export und Import einer übertragbaren Projektdatei
+- direkter Projekttransfer über einen Freigabelink
 - alle Berechnungen finden direkt im Browser statt
 - lauffähig auf Desktop, Tablet und Smartphone
 - statisch über GitHub Pages oder einen vergleichbaren Dienst veröffentlichbar
@@ -185,6 +186,23 @@ reguläre Tilgungsphase nach einer gegebenenfalls tilgungsfreien Anlaufzeit.
   Server. Eine Übertragung erfolgt nur durch die ausdrückliche Weitergabe der
   erzeugten Projektdatei.
 
+### Freigabelink
+
+- Der Link enthält das aktuelle Projekt in einem kompakten, kodierten
+  URL-Fragment hinter `#` und kann über das systemeigene Teilen-Menü versendet
+  oder in die Zwischenablage kopiert werden.
+- URL-Fragmente werden beim Aufruf nicht an den Webserver übertragen. Der
+  Browser liest und verarbeitet die enthaltenen Projektdaten lokal.
+- Beim Öffnen wird das Projektformat geprüft und es werden ausschließlich die
+  bekannten Calculator-Eingabefelder übernommen.
+- Das empfangene Projekt ersetzt den aktuellen lokalen Entwurf, wird aber nicht
+  automatisch in die benannte Projektliste aufgenommen.
+- Nach erfolgreichem oder fehlgeschlagenem Einlesen entfernt die App den
+  Datenabschnitt aus der sichtbaren Adresszeile.
+- Wer den vollständigen Link erhält, kann die darin enthaltenen Projektwerte
+  lesen und öffnen. Der Link darf deshalb nur bewusst an vorgesehene Personen
+  weitergegeben werden.
+
 ## Ergebnisdarstellung
 
 Die Anwendung zeigt:
@@ -216,7 +234,7 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.5 berücksichtigt insbesondere noch nicht:
+Version 0.5.1 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen
@@ -245,3 +263,6 @@ Steuer- oder Rechtsberatung.
 9. Benannte Projekte können lokal gespeichert, geladen und gelöscht werden.
 10. Eine erzeugte Projektdatei kann auf einem anderen Gerät wieder geöffnet
     werden, ohne dass die App unbekannte Dateiinhalte ausführt.
+11. Ein gültiger Freigabelink öffnet das enthaltene Projekt direkt, ein
+    ungültiger Link wird zurückgewiesen und anschließend aus der Adresszeile
+    entfernt.
