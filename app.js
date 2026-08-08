@@ -32,6 +32,15 @@ const defaults = {
   scenarioVariance: 15,
 };
 
+const APP_VERSION = "0.5";
+const PROJECT_FILE_FORMAT = "studio-calculator-project";
+const PROJECT_SCHEMA_VERSION = 1;
+const MAX_PROJECT_FILE_SIZE = 100 * 1024;
+const STORAGE_KEYS = {
+  draft: "studio-calculator:draft:v1",
+  projects: "studio-calculator:projects:v1",
+};
+
 const form = document.querySelector("#calculatorForm");
 const resultCard = document.querySelector("#resultCard");
 const insights = document.querySelector("#insights");
@@ -39,8 +48,16 @@ const fundingStatus = document.querySelector("#fundingStatus");
 const cashflowResult = document.querySelector("#cashflowResult");
 const cashflowMap = document.querySelector("#cashflowMap");
 const cashflowTableBody = document.querySelector("#cashflowTableBody");
+const storageStatus = document.querySelector("#storageStatus");
+const savedProjectSelect = document.querySelector("#savedProjectSelect");
+const loadProjectButton = document.querySelector("#loadProjectButton");
+const deleteProjectButton = document.querySelector("#deleteProjectButton");
+const projectFileInput = document.querySelector("#projectFileInput");
 let lastCapitalRequirement = 0;
 let lastReportData = null;
+let activeProjectId = null;
+let autosaveTimer = null;
+let storageAvailable = true;
 
 const euro = new Intl.NumberFormat("de-DE", {
   style: "currency",
@@ -67,6 +84,378 @@ function value(id) {
 
 function setText(id, content) {
   document.querySelector(`#${id}`).textContent = content;
+}
+
+function setStorageStatus(message, state = "neutral") {
+  storageStatus.textContent = message;
+  storageStatus.dataset.state = state;
+}
+
+function normalizeProjectData(rawData = {}) {
+  const normalized = {};
+
+  Object.entries(defaults).forEach(([id, defaultValue]) => {
+    const input = document.querySelector(`#${id}`);
+    if (id === "projectName") {
+      normalized[id] =
+        typeof rawData[id] === "string"
+          ? rawData[id].trim().slice(0, 160)
+          : defaultValue;
+      return;
+    }
+
+    const parsed = Number.parseFloat(rawData[id]);
+    let nextValue = Number.isFinite(parsed) ? parsed : defaultValue;
+    const minimum = Number.parseFloat(input.min);
+    const maximum = Number.parseFloat(input.max);
+    if (Number.isFinite(minimum)) nextValue = Math.max(minimum, nextValue);
+    if (Number.isFinite(maximum)) nextValue = Math.min(maximum, nextValue);
+    normalized[id] = nextValue;
+  });
+
+  return normalized;
+}
+
+function collectProjectData() {
+  const rawData = {};
+  Object.keys(defaults).forEach((id) => {
+    rawData[id] = document.querySelector(`#${id}`).value;
+  });
+  return normalizeProjectData(rawData);
+}
+
+function applyProjectData(rawData) {
+  const data = normalizeProjectData(rawData);
+  Object.entries(data).forEach(([id, storedValue]) => {
+    document.querySelector(`#${id}`).value = storedValue;
+  });
+  calculate();
+  return data;
+}
+
+function createProjectId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `project-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function checkStorageAvailability() {
+  try {
+    const testKey = `${STORAGE_KEYS.draft}:test`;
+    localStorage.setItem(testKey, "1");
+    localStorage.removeItem(testKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function readSavedProjects() {
+  if (!storageAvailable) return [];
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.projects);
+    if (stored === null) return [];
+    const projects = JSON.parse(stored);
+    if (!Array.isArray(projects)) throw new Error("Ungültige Projektliste");
+
+    return projects
+      .filter(
+        (project) =>
+          project &&
+          typeof project.id === "string" &&
+          project.data &&
+          typeof project.data === "object",
+      )
+      .map((project) => {
+        const data = normalizeProjectData(project.data);
+        return {
+          id: project.id,
+          name:
+            typeof project.name === "string" && project.name.trim()
+              ? project.name.trim().slice(0, 160)
+              : data.projectName || "Unbenanntes Projekt",
+          savedAt:
+            typeof project.savedAt === "string" ? project.savedAt : new Date(0).toISOString(),
+          data,
+        };
+      })
+      .sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+  } catch {
+    setStorageStatus("Lokale Projektliste konnte nicht gelesen werden", "error");
+    return [];
+  }
+}
+
+function writeSavedProjects(projects) {
+  if (!storageAvailable) return false;
+  try {
+    localStorage.setItem(STORAGE_KEYS.projects, JSON.stringify(projects));
+    return true;
+  } catch {
+    setStorageStatus("Projekt konnte lokal nicht gespeichert werden", "error");
+    return false;
+  }
+}
+
+function updateProjectButtons() {
+  const hasSelection = savedProjectSelect.value !== "";
+  loadProjectButton.disabled = !hasSelection;
+  deleteProjectButton.disabled = !hasSelection;
+}
+
+function renderSavedProjects(preferredId = "") {
+  const projects = readSavedProjects();
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Gespeichertes Projekt wählen …";
+
+  const options = projects.map((project) => {
+    const option = document.createElement("option");
+    option.value = project.id;
+    const savedAt = new Date(project.savedAt);
+    const dateLabel = Number.isNaN(savedAt.getTime())
+      ? ""
+      : ` · ${savedAt.toLocaleDateString("de-DE")}`;
+    option.textContent = `${project.name}${dateLabel}`;
+    return option;
+  });
+
+  savedProjectSelect.replaceChildren(placeholder, ...options);
+  if (projects.some((project) => project.id === preferredId)) {
+    savedProjectSelect.value = preferredId;
+  }
+  updateProjectButtons();
+  return projects;
+}
+
+function saveDraft({ announce = true } = {}) {
+  if (!storageAvailable) return false;
+  try {
+    localStorage.setItem(
+      STORAGE_KEYS.draft,
+      JSON.stringify({
+        schemaVersion: PROJECT_SCHEMA_VERSION,
+        savedAt: new Date().toISOString(),
+        data: collectProjectData(),
+      }),
+    );
+    if (announce) setStorageStatus("Entwurf automatisch gespeichert", "saved");
+    return true;
+  } catch {
+    setStorageStatus("Automatisches Speichern nicht verfügbar", "error");
+    return false;
+  }
+}
+
+function queueDraftSave() {
+  if (!storageAvailable) return;
+  window.clearTimeout(autosaveTimer);
+  setStorageStatus("Änderungen werden gespeichert …", "working");
+  autosaveTimer = window.setTimeout(() => saveDraft(), 350);
+}
+
+function loadDraft() {
+  if (!storageAvailable) return false;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.draft);
+    if (stored === null) return false;
+    const draft = JSON.parse(stored);
+    if (!draft?.data || typeof draft.data !== "object") {
+      throw new Error("Ungültiger Entwurf");
+    }
+    applyProjectData(draft.data);
+    setStorageStatus("Letzten Entwurf wiederhergestellt", "saved");
+    return true;
+  } catch {
+    setStorageStatus("Gespeicherter Entwurf konnte nicht geladen werden", "error");
+    return false;
+  }
+}
+
+function saveNamedProject() {
+  window.clearTimeout(autosaveTimer);
+  const data = collectProjectData();
+  const name = data.projectName || "Unbenanntes Projekt";
+  const projects = readSavedProjects();
+  let projectIndex = activeProjectId
+    ? projects.findIndex((project) => project.id === activeProjectId)
+    : -1;
+
+  if (projectIndex < 0) {
+    projectIndex = projects.findIndex(
+      (project) => project.name.toLocaleLowerCase("de-DE") === name.toLocaleLowerCase("de-DE"),
+    );
+  }
+
+  const savedProject = {
+    id: projectIndex >= 0 ? projects[projectIndex].id : createProjectId(),
+    name,
+    savedAt: new Date().toISOString(),
+    data,
+  };
+
+  if (projectIndex >= 0) projects.splice(projectIndex, 1);
+  projects.unshift(savedProject);
+  if (!writeSavedProjects(projects)) return;
+
+  activeProjectId = savedProject.id;
+  renderSavedProjects(activeProjectId);
+  saveDraft({ announce: false });
+  setStorageStatus(
+    projectIndex >= 0 ? `„${name}“ aktualisiert` : `„${name}“ lokal gespeichert`,
+    "saved",
+  );
+}
+
+function loadSelectedProject() {
+  window.clearTimeout(autosaveTimer);
+  const project = readSavedProjects().find(
+    (item) => item.id === savedProjectSelect.value,
+  );
+  if (!project) {
+    setStorageStatus("Gespeichertes Projekt wurde nicht gefunden", "error");
+    return;
+  }
+
+  activeProjectId = project.id;
+  applyProjectData(project.data);
+  saveDraft({ announce: false });
+  setStorageStatus(`„${project.name}“ geladen`, "saved");
+  document.querySelector("#projectName").focus();
+}
+
+function deleteSelectedProject() {
+  const selectedId = savedProjectSelect.value;
+  const projects = readSavedProjects();
+  const project = projects.find((item) => item.id === selectedId);
+  if (!project) return;
+  if (!window.confirm(`Soll „${project.name}“ wirklich aus diesem Gerät gelöscht werden?`)) {
+    return;
+  }
+
+  const remainingProjects = projects.filter((item) => item.id !== selectedId);
+  if (!writeSavedProjects(remainingProjects)) return;
+  if (activeProjectId === selectedId) activeProjectId = null;
+  renderSavedProjects();
+  setStorageStatus(`„${project.name}“ lokal gelöscht`, "neutral");
+}
+
+function buildProjectFile() {
+  const data = collectProjectData();
+  const name = data.projectName || "Unbenanntes Projekt";
+  const payload = {
+    format: PROJECT_FILE_FORMAT,
+    schemaVersion: PROJECT_SCHEMA_VERSION,
+    appVersion: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    project: { name, data },
+  };
+  const safeName = name
+    .normalize("NFKD")
+    .replace(/[^a-zA-Z0-9äöüÄÖÜß -]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .slice(0, 80);
+  return {
+    blob: new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }),
+    filename: `${safeName || "Studio-Projekt"}.studio-calculator.json`,
+    name,
+  };
+}
+
+function downloadProjectFile(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function shareProjectFile() {
+  const projectFile = buildProjectFile();
+  const canCreateFile = typeof File === "function";
+  const file = canCreateFile
+    ? new File([projectFile.blob], projectFile.filename, { type: "application/json" })
+    : null;
+  let supportsFileSharing = false;
+
+  try {
+    supportsFileSharing = Boolean(
+      file &&
+        typeof navigator.share === "function" &&
+        typeof navigator.canShare === "function" &&
+        navigator.canShare({ files: [file] }),
+    );
+  } catch {
+    supportsFileSharing = false;
+  }
+
+  if (supportsFileSharing) {
+    try {
+      await navigator.share({
+        title: `${projectFile.name} · Studio Calculator`,
+        text: "Studio-Calculator-Projektdatei zum Öffnen und Weiterbearbeiten.",
+        files: [file],
+      });
+      setStorageStatus("Projektdatei zur Weitergabe geöffnet", "saved");
+      return;
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        setStorageStatus("Weitergabe abgebrochen", "neutral");
+        return;
+      }
+    }
+  }
+
+  downloadProjectFile(projectFile.blob, projectFile.filename);
+  setStorageStatus("Projektdatei heruntergeladen – jetzt versenden", "saved");
+}
+
+async function openProjectFile(file) {
+  if (!file) return;
+  try {
+    if (file.size > MAX_PROJECT_FILE_SIZE) {
+      throw new Error("Die Projektdatei ist zu groß");
+    }
+    const payload = JSON.parse(await file.text());
+    if (
+      payload?.format !== PROJECT_FILE_FORMAT ||
+      payload.schemaVersion !== PROJECT_SCHEMA_VERSION ||
+      !payload.project?.data ||
+      typeof payload.project.data !== "object"
+    ) {
+      throw new Error("Unbekanntes Projektformat");
+    }
+
+    activeProjectId = null;
+    window.clearTimeout(autosaveTimer);
+    applyProjectData(payload.project.data);
+    savedProjectSelect.value = "";
+    updateProjectButtons();
+    saveDraft({ announce: false });
+    const projectName = collectProjectData().projectName || "Unbenanntes Projekt";
+    setStorageStatus(`„${projectName}“ aus Projektdatei geöffnet`, "saved");
+    document.querySelector("#projectName").focus();
+  } catch {
+    setStorageStatus("Diese Projektdatei konnte nicht geöffnet werden", "error");
+  } finally {
+    projectFileInput.value = "";
+  }
+}
+
+function initializeProjectStorage() {
+  storageAvailable = checkStorageAvailability();
+  if (!storageAvailable) {
+    setStorageStatus("Lokales Speichern ist in diesem Browser blockiert", "error");
+    document.querySelector("#saveProjectButton").disabled = true;
+  }
+  renderSavedProjects();
+  if (!loadDraft()) {
+    calculate();
+    if (storageAvailable) saveDraft();
+  }
 }
 
 function formatMonths(months) {
@@ -630,14 +1019,40 @@ function preparePrintReport() {
 form.addEventListener("input", (event) => {
   syncRentFields(event.target.id);
   calculate();
+  queueDraftSave();
 });
 
 document.querySelector("#resetButton").addEventListener("click", () => {
+  window.clearTimeout(autosaveTimer);
   Object.entries(defaults).forEach(([id, defaultValue]) => {
     document.querySelector(`#${id}`).value = defaultValue;
   });
+  activeProjectId = null;
+  savedProjectSelect.value = "";
+  updateProjectButtons();
   calculate();
+  saveDraft();
   document.querySelector("#projectName").focus();
+});
+
+document.querySelector("#saveProjectButton").addEventListener("click", saveNamedProject);
+
+savedProjectSelect.addEventListener("change", updateProjectButtons);
+
+loadProjectButton.addEventListener("click", loadSelectedProject);
+
+deleteProjectButton.addEventListener("click", deleteSelectedProject);
+
+document.querySelector("#shareProjectButton").addEventListener("click", () => {
+  shareProjectFile();
+});
+
+document.querySelector("#openProjectFileButton").addEventListener("click", () => {
+  projectFileInput.click();
+});
+
+projectFileInput.addEventListener("change", () => {
+  openProjectFile(projectFileInput.files?.[0]);
 });
 
 document.querySelector("#balanceFinancing").addEventListener("click", () => {
@@ -647,6 +1062,7 @@ document.querySelector("#balanceFinancing").addEventListener("click", () => {
   );
   document.querySelector("#bankLoan").value = Math.round(uncoveredAmount);
   calculate();
+  queueDraftSave();
   document.querySelector("#bankLoan").focus();
 });
 
@@ -668,4 +1084,13 @@ document.querySelector("#pdfButton").addEventListener("click", () => {
 
 window.addEventListener("beforeprint", preparePrintReport);
 
-calculate();
+window.addEventListener("beforeunload", () => {
+  window.clearTimeout(autosaveTimer);
+  saveDraft({ announce: false });
+});
+
+window.addEventListener("storage", (event) => {
+  if (event.key === STORAGE_KEYS.projects) renderSavedProjects(activeProjectId);
+});
+
+initializeProjectStorage();

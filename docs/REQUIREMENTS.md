@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.4
+v0.5
 
 ## Ziel
 
@@ -15,12 +15,14 @@ zu müssen.
 
 ## Ziel der aktuellen Version
 
-Version 0.4 bleibt technisch bewusst einfach:
+Version 0.5 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
 - kein Framework und kein Build-Prozess
-- keine dauerhafte Speicherung der eingegebenen Projektdaten
+- automatische lokale Speicherung des aktuellen Entwurfs
+- lokale Liste benannter Projekte
+- Export und Import einer übertragbaren Projektdatei
 - alle Berechnungen finden direkt im Browser statt
 - lauffähig auf Desktop, Tablet und Smartphone
 - statisch über GitHub Pages oder einen vergleichbaren Dienst veröffentlichbar
@@ -163,6 +165,26 @@ reguläre Tilgungsphase nach einer gegebenenfalls tilgungsfreien Anlaufzeit.
   Hochlauf-Tabelle.
 - Die Berichtserstellung überträgt keine Projektdaten an einen Server.
 
+### Lokale Projekte und Projektdateien
+
+- Der aktuelle Entwurf wird nach Änderungen automatisch im Browser des
+  verwendeten Geräts gespeichert und beim nächsten Aufruf wiederhergestellt.
+- Aktuelle Eingaben können unter ihrem Projektnamen zusätzlich als benanntes
+  Projekt in einer lokalen Projektliste gespeichert und später geladen werden.
+- Lokal gespeicherte Projekte können einzeln vom verwendeten Gerät gelöscht
+  werden. Der aktuelle Entwurf bleibt davon unberührt.
+- Eine Projektdatei enthält alle fachlichen Eingabefelder sowie Format-, Schema-
+  und App-Version. Sie wird im Browser als JSON-Datei erzeugt.
+- Auf Geräten mit unterstützter Dateifreigabe öffnet die App das systemeigene
+  Teilen-Menü. Andernfalls wird die Projektdatei heruntergeladen und kann danach
+  manuell versendet werden.
+- Beim Import werden ausschließlich bekannte Eingabefelder übernommen,
+  Zahlenwerte auf die zulässigen Feldgrenzen beschränkt und unbekannte oder
+  nicht passende Dateiformate abgewiesen.
+- Lokale Speicherung und Dateierzeugung übertragen keine Projektdaten an einen
+  Server. Eine Übertragung erfolgt nur durch die ausdrückliche Weitergabe der
+  erzeugten Projektdatei.
+
 ## Ergebnisdarstellung
 
 Die Anwendung zeigt:
@@ -194,14 +216,14 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.4 berücksichtigt insbesondere noch nicht:
+Version 0.5 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen
 - Abschreibungen oder Ertragsteuern
 - getrennte fixe und variable Kosten
-- gespeicherte Szenarioversionen oder Projektspeicherung
 - Benutzerkonten und geräteübergreifend synchronisierte Eingaben
+- zentrale Team-Projektablage, Berechtigungen oder Bearbeitungshistorie
 
 Die Ergebnisse sind eine überschlägige Entscheidungshilfe und keine Finanz-,
 Steuer- oder Rechtsberatung.
@@ -218,3 +240,8 @@ Steuer- oder Rechtsberatung.
    GitHub-Pages-Veröffentlichung.
 7. Der PDF-Bericht lässt sich über den Browser-Druckdialog speichern und enthält
    die zum Erstellungszeitpunkt aktuellen Projektwerte.
+8. Der letzte Entwurf wird nach einem erneuten Seitenaufruf aus dem lokalen
+   Browserspeicher wiederhergestellt.
+9. Benannte Projekte können lokal gespeichert, geladen und gelöscht werden.
+10. Eine erzeugte Projektdatei kann auf einem anderen Gerät wieder geöffnet
+    werden, ohne dass die App unbekannte Dateiinhalte ausführt.
