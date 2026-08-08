@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.1
+v0.2
 
 ## Ziel
 
@@ -13,9 +13,9 @@ Die Anwendung soll während Gesprächen und Projektbewertungen eine direkte
 Einschätzung ermöglichen, ohne dafür eine umfangreiche Excel-Kalkulation öffnen
 zu müssen.
 
-## Ziel der ersten Version
+## Ziel der aktuellen Version
 
-Version 0.1 bleibt bewusst einfach:
+Version 0.2 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
@@ -58,6 +58,17 @@ Version 0.1 bleibt bewusst einfach:
 - weitere Einmalkosten
 - Anzahl Monate Liquiditätsreserve
 
+### Finanzierung
+
+- Eigenkapital
+- Bankdarlehen
+- Fördermittel und Zuschüsse
+- leasingfinanzierter Anteil
+- jährlicher Sollzins
+- Darlehenslaufzeit in Jahren
+- tilgungsfreie Anlaufzeit in Monaten
+- monatliche Leasingrate
+
 ## Berechnungen
 
 ### Monatsumsatz netto
@@ -86,6 +97,27 @@ Abschreibungen, Ertragsteuern und Sondereffekten.
 - Kapitalbedarf: Einmalinvestitionen + Liquiditätsreserve
 - rechnerische Amortisation: Kapitalbedarf ÷ positives Monatsbetriebsergebnis
 
+### Finanzierung
+
+- Gesamtfinanzierung: Eigenkapital + Bankdarlehen + Fördermittel +
+  leasingfinanzierter Anteil
+- Finanzierungssaldo: Kapitalbedarf − Gesamtfinanzierung
+- Eigenkapitalquote: Eigenkapital ÷ Kapitalbedarf
+- monatliche Darlehensrate: vereinfachte Annuität aus Darlehen, Sollzins und
+  verbleibender Tilgungsdauer
+- während der tilgungsfreien Anlaufzeit werden nur die rechnerischen Zinsen
+  ausgewiesen
+- Schuldendienst: Darlehensrate + monatliche Leasingrate
+- Cashflow nach Finanzierung: Betriebsergebnis − Schuldendienst
+- DSCR: Betriebsergebnis ÷ Schuldendienst
+- vereinfachte Eigenkapitalrendite: jährlicher Cashflow nach Finanzierung ÷
+  Eigenkapital
+- rechnerische Eigenkapital-Amortisation: Eigenkapital ÷ positiver monatlicher
+  Cashflow nach Finanzierung
+
+Die Darlehensrate und der Cashflow nach Finanzierung beziehen sich auf die
+reguläre Tilgungsphase nach einer gegebenenfalls tilgungsfreien Anlaufzeit.
+
 ## Ergebnisdarstellung
 
 Die Anwendung zeigt:
@@ -97,6 +129,10 @@ Die Anwendung zeigt:
 - Ergebnismarge und Ergebnis je m²
 - Kapitalbedarf inklusive Reserve
 - rechnerische Amortisationsdauer
+- Finanzierungssaldo und Eigenkapitalquote
+- monatliche Darlehensrate und gesamter Schuldendienst
+- Cashflow nach Finanzierung, DSCR und vereinfachte Eigenkapitalrendite
+- geschätzte Gesamtzinsen und rechnerische Eigenkapital-Amortisation
 - kurze textliche Einordnung der wichtigsten Werte
 
 ## Plattform- und Repository-Konzept
@@ -110,12 +146,13 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.1 berücksichtigt insbesondere noch nicht:
+Version 0.2 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
-- Finanzierungskosten, Leasing, Abschreibungen oder Ertragsteuern
+- individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen
+- Abschreibungen oder Ertragsteuern
 - getrennte fixe und variable Kosten
-- Szenarien, Versionen, Export oder Projektspeicherung
+- Szenarien, Versionen, PDF-Export oder Projektspeicherung
 - Benutzerkonten und geräteübergreifend synchronisierte Eingaben
 
 Die Ergebnisse sind eine überschlägige Entscheidungshilfe und keine Finanz-,

@@ -16,7 +16,7 @@
     <header class="hero">
       <div class="hero__content">
         <div>
-          <p class="eyebrow">Studio Calculator · v0.1</p>
+          <p class="eyebrow">Studio Calculator · v0.2</p>
           <h1>Trägt sich der Standort?</h1>
           <p class="hero__intro">
             Eine schnelle erste Einschätzung zu Ergebnis, Break-even und
@@ -182,6 +182,91 @@
               </label>
             </div>
           </fieldset>
+
+          <fieldset class="finance-fieldset">
+            <legend>Finanzierung</legend>
+            <p class="fieldset-intro">
+              Stellen Sie dem Kapitalbedarf die Finanzierung gegenüber. Das
+              Betriebsergebnis bleibt dabei bewusst separat sichtbar.
+            </p>
+
+            <div class="finance-input-group">
+              <div class="subsection-heading">
+                <h3>Kapitalstruktur</h3>
+                <span id="fundingInputSummary">Kapitalbedarf vollständig gedeckt</span>
+              </div>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Eigenkapital</span>
+                  <span class="input-wrap">
+                    <input id="equity" name="equity" type="number" min="0" step="1000" value="150000" />
+                    <span class="unit">€</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Bankdarlehen</span>
+                  <span class="input-wrap">
+                    <input id="bankLoan" name="bankLoan" type="number" min="0" step="1000" value="271600" />
+                    <span class="unit">€</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Fördermittel / Zuschüsse</span>
+                  <span class="input-wrap">
+                    <input id="grants" name="grants" type="number" min="0" step="1000" value="0" />
+                    <span class="unit">€</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Leasingfinanzierter Anteil</span>
+                  <span class="input-wrap">
+                    <input id="leaseFinancing" name="leaseFinancing" type="number" min="0" step="1000" value="0" />
+                    <span class="unit">€</span>
+                  </span>
+                </label>
+              </div>
+              <button class="secondary-button" id="balanceFinancing" type="button">
+                Finanzierungslücke mit Darlehen ausgleichen
+              </button>
+            </div>
+
+            <div class="finance-input-group">
+              <div class="subsection-heading">
+                <h3>Konditionen</h3>
+                <span>vereinfachte Annuitätenrechnung</span>
+              </div>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Sollzins pro Jahr</span>
+                  <span class="input-wrap">
+                    <input id="loanInterest" name="loanInterest" type="number" min="0" step="0.1" value="5.5" />
+                    <span class="unit">%</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Darlehenslaufzeit</span>
+                  <span class="input-wrap">
+                    <input id="loanTermYears" name="loanTermYears" type="number" min="1" max="50" step="1" value="10" />
+                    <span class="unit">Jahre</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Tilgungsfreie Anlaufzeit</span>
+                  <span class="input-wrap">
+                    <input id="graceMonths" name="graceMonths" type="number" min="0" max="120" step="1" value="0" />
+                    <span class="unit">Mon.</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Leasingrate / Monat</span>
+                  <span class="input-wrap">
+                    <input id="monthlyLeasePayment" name="monthlyLeasePayment" type="number" min="0" step="50" value="0" />
+                    <span class="unit">€</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </fieldset>
         </form>
       </section>
 
@@ -248,6 +333,66 @@
           </div>
         </section>
 
+        <section class="panel finance-panel" aria-labelledby="finance-results-title">
+          <div class="finance-panel__heading">
+            <div>
+              <p class="section-kicker">Kapital &amp; Finanzierung</p>
+              <h2 id="finance-results-title">Nach Finanzierung</h2>
+            </div>
+            <span class="finance-status" id="fundingStatus" data-state="covered">Gedeckt</span>
+          </div>
+
+          <div class="cashflow-result" id="cashflowResult" data-state="positive">
+            <span>Monatlicher Cashflow nach Finanzierung</span>
+            <strong id="cashflowAfterFinancing">–</strong>
+          </div>
+
+          <div class="finance-metrics">
+            <article>
+              <span>Finanzierungssaldo</span>
+              <strong id="financingGap">–</strong>
+            </article>
+            <article>
+              <span>Eigenkapitalquote</span>
+              <strong id="equityRatio">–</strong>
+            </article>
+            <article>
+              <span>Darlehensrate</span>
+              <strong id="monthlyLoanPayment">–</strong>
+            </article>
+            <article>
+              <span>Gesamter Schuldendienst</span>
+              <strong id="monthlyDebtService">–</strong>
+            </article>
+            <article>
+              <span>DSCR</span>
+              <strong id="dscr">–</strong>
+            </article>
+            <article>
+              <span>Eigenkapitalrendite</span>
+              <strong id="equityReturn">–</strong>
+            </article>
+          </div>
+
+          <details class="finance-details">
+            <summary>Weitere Finanzierungsdetails</summary>
+            <dl>
+              <div>
+                <dt>Zinszahlung während tilgungsfreier Zeit</dt>
+                <dd id="gracePayment">–</dd>
+              </div>
+              <div>
+                <dt>Geschätzte Gesamtzinsen</dt>
+                <dd id="totalInterest">–</dd>
+              </div>
+              <div>
+                <dt>Rechnerische EK-Amortisation</dt>
+                <dd id="equityPayback">–</dd>
+              </div>
+            </dl>
+          </details>
+        </section>
+
         <section class="panel insight-panel">
           <p class="section-kicker">Einordnung</p>
           <ul id="insights"></ul>
@@ -259,7 +404,9 @@
             Mitgliedsumsätze werden um die eingestellte Umsatzsteuer bereinigt.
             Das Betriebsergebnis ist Nettoumsatz minus aller monatlichen Kosten.
             Der Kapitalbedarf umfasst Einmalinvestitionen plus laufende Kosten
-            für die gewählten Reservemonate.
+            für die gewählten Reservemonate. Der Cashflow nach Finanzierung
+            zieht die berechnete Darlehensrate und die Leasingrate vom
+            Betriebsergebnis ab.
           </p>
           <p>
             Die Kalkulation ist eine überschlägige Entscheidungshilfe und keine
@@ -270,7 +417,7 @@
     </main>
 
     <footer>
-      <p>Studio Calculator v0.1 · Statische Browser-App ohne Datenspeicherung</p>
+      <p>Studio Calculator v0.2 · Statische Browser-App ohne Datenspeicherung</p>
     </footer>
   </body>
 </html>

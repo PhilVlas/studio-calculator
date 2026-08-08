@@ -15,11 +15,22 @@ const defaults = {
   buildout: 120000,
   otherInvestment: 25000,
   reserveMonths: 3,
+  equity: 150000,
+  bankLoan: 271600,
+  grants: 0,
+  leaseFinancing: 0,
+  loanInterest: 5.5,
+  loanTermYears: 10,
+  graceMonths: 0,
+  monthlyLeasePayment: 0,
 };
 
 const form = document.querySelector("#calculatorForm");
 const resultCard = document.querySelector("#resultCard");
 const insights = document.querySelector("#insights");
+const fundingStatus = document.querySelector("#fundingStatus");
+const cashflowResult = document.querySelector("#cashflowResult");
+let lastCapitalRequirement = 0;
 
 const euro = new Intl.NumberFormat("de-DE", {
   style: "currency",
@@ -45,6 +56,12 @@ function formatMonths(months) {
   if (!Number.isFinite(months)) return "Nicht erreichbar";
   if (months < 12) return `${decimal.format(months)} Monate`;
   return `${decimal.format(months / 12)} Jahre`;
+}
+
+function annuityPayment(principal, monthlyInterest, months) {
+  if (principal <= 0) return 0;
+  if (monthlyInterest <= 0) return principal / months;
+  return principal * (monthlyInterest / (1 - (1 + monthlyInterest) ** -months));
 }
 
 function calculate() {
@@ -73,8 +90,39 @@ function calculate() {
     value("equipment") + value("buildout") + value("otherInvestment");
   const liquidityReserve = monthlyCosts * reserveMonths;
   const capitalRequirement = investment + liquidityReserve;
+  lastCapitalRequirement = capitalRequirement;
   const paybackMonths =
     monthlyResult > 0 ? capitalRequirement / monthlyResult : Number.POSITIVE_INFINITY;
+
+  const equity = value("equity");
+  const bankLoan = value("bankLoan");
+  const grants = value("grants");
+  const leaseFinancing = value("leaseFinancing");
+  const totalFunding = equity + bankLoan + grants + leaseFinancing;
+  const financingGap = capitalRequirement - totalFunding;
+  const equityRatio = capitalRequirement > 0 ? (equity / capitalRequirement) * 100 : null;
+
+  const monthlyInterest = value("loanInterest") / 100 / 12;
+  const totalLoanMonths = Math.max(1, Math.round(value("loanTermYears") * 12));
+  const graceMonths = Math.min(
+    Math.round(value("graceMonths")),
+    Math.max(0, totalLoanMonths - 1),
+  );
+  const repaymentMonths = totalLoanMonths - graceMonths;
+  const monthlyLoanPayment = annuityPayment(bankLoan, monthlyInterest, repaymentMonths);
+  const gracePayment = bankLoan * monthlyInterest;
+  const totalInterest = Math.max(
+    0,
+    gracePayment * graceMonths + monthlyLoanPayment * repaymentMonths - bankLoan,
+  );
+  const monthlyDebtService = monthlyLoanPayment + value("monthlyLeasePayment");
+  const cashflowAfterFinancing = monthlyResult - monthlyDebtService;
+  const dscr = monthlyDebtService > 0 ? monthlyResult / monthlyDebtService : null;
+  const equityReturn = equity > 0 ? (cashflowAfterFinancing * 12 * 100) / equity : null;
+  const equityPaybackMonths =
+    equity > 0 && cashflowAfterFinancing > 0
+      ? equity / cashflowAfterFinancing
+      : Number.POSITIVE_INFINITY;
 
   const projectName = document.querySelector("#projectName").value.trim();
   setText("resultProject", projectName || "Unbenanntes Projekt");
@@ -90,6 +138,39 @@ function calculate() {
   );
   setText("capitalRequirement", euro.format(capitalRequirement));
   setText("payback", formatMonths(paybackMonths));
+  setText("cashflowAfterFinancing", euro.format(cashflowAfterFinancing));
+  setText("equityRatio", equityRatio === null ? "–" : `${decimal.format(equityRatio)} %`);
+  setText("monthlyLoanPayment", `${euro.format(monthlyLoanPayment)} / Mon.`);
+  setText("monthlyDebtService", `${euro.format(monthlyDebtService)} / Mon.`);
+  setText("dscr", dscr === null ? "Nicht anwendbar" : `${decimal.format(dscr)} ×`);
+  setText(
+    "equityReturn",
+    equityReturn === null ? "Nicht anwendbar" : `${decimal.format(equityReturn)} % p. a.`,
+  );
+  setText("gracePayment", `${euro.format(gracePayment)} / Mon.`);
+  setText("totalInterest", euro.format(totalInterest));
+  setText("equityPayback", formatMonths(equityPaybackMonths));
+
+  let fundingState = "covered";
+  let fundingLabel = "Gedeckt";
+  let fundingSummary = "Kapitalbedarf vollständig gedeckt";
+  let financingBalanceText = "Vollständig gedeckt";
+  if (financingGap > 0.5) {
+    fundingState = "gap";
+    fundingLabel = "Lücke";
+    fundingSummary = `${euro.format(financingGap)} Finanzierungslücke`;
+    financingBalanceText = `${euro.format(financingGap)} Lücke`;
+  } else if (financingGap < -0.5) {
+    fundingState = "surplus";
+    fundingLabel = "Überdeckung";
+    fundingSummary = `${euro.format(Math.abs(financingGap))} Überdeckung`;
+    financingBalanceText = `${euro.format(Math.abs(financingGap))} Überdeckung`;
+  }
+  fundingStatus.dataset.state = fundingState;
+  fundingStatus.textContent = fundingLabel;
+  setText("fundingInputSummary", fundingSummary);
+  setText("financingGap", financingBalanceText);
+  cashflowResult.dataset.state = cashflowAfterFinancing >= 0 ? "positive" : "negative";
 
   let state = "positive";
   let assessment = "Tragfähig";
@@ -138,6 +219,27 @@ function calculate() {
     `Im Kapitalbedarf sind ${euro.format(investment)} Investitionen und ${euro.format(liquidityReserve)} Reserve enthalten.`,
   );
 
+  if (financingGap > 0.5) {
+    insightItems.push(
+      `Die Kapitalstruktur lässt noch eine Finanzierungslücke von ${euro.format(financingGap)} offen.`,
+    );
+  } else if (financingGap < -0.5) {
+    insightItems.push(
+      `Die eingetragene Finanzierung liegt ${euro.format(Math.abs(financingGap))} über dem Kapitalbedarf.`,
+    );
+  } else {
+    insightItems.push("Die eingetragene Finanzierung deckt den Kapitalbedarf vollständig.");
+  }
+
+  if (monthlyDebtService > 0) {
+    const cashflowDirection = cashflowAfterFinancing >= 0 ? "Überschuss" : "Unterdeckung";
+    insightItems.push(
+      `Nach ${euro.format(monthlyDebtService)} monatlichem Schuldendienst verbleibt eine ${cashflowDirection} von ${euro.format(Math.abs(cashflowAfterFinancing))}.`,
+    );
+  } else {
+    insightItems.push("Ohne Darlehens- oder Leasingrate entspricht der Cashflow dem Betriebsergebnis.");
+  }
+
   insights.replaceChildren(
     ...insightItems.map((text) => {
       const item = document.createElement("li");
@@ -155,6 +257,16 @@ document.querySelector("#resetButton").addEventListener("click", () => {
   });
   calculate();
   document.querySelector("#projectName").focus();
+});
+
+document.querySelector("#balanceFinancing").addEventListener("click", () => {
+  const uncoveredAmount = Math.max(
+    0,
+    lastCapitalRequirement - value("equity") - value("grants") - value("leaseFinancing"),
+  );
+  document.querySelector("#bankLoan").value = Math.round(uncoveredAmount);
+  calculate();
+  document.querySelector("#bankLoan").focus();
 });
 
 calculate();
