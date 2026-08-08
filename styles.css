@@ -203,13 +203,6 @@ legend {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.field-hint {
-  margin: 10px 0 0;
-  color: var(--muted);
-  font-size: 0.71rem;
-  line-height: 1.45;
-}
-
 .finance-fieldset {
   padding-top: 26px;
 }

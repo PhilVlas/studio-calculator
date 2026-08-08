@@ -9,14 +9,14 @@
     />
     <meta name="theme-color" content="#10231f" />
     <title>Studio Calculator</title>
-    <link rel="stylesheet" href="styles.css" />
-    <script src="app.js" defer></script>
+    <link rel="stylesheet" href="styles.css?v=0.2.1" />
+    <script src="app.js?v=0.2.1" defer></script>
   </head>
   <body>
     <header class="hero">
       <div class="hero__content">
         <div>
-          <p class="eyebrow">Studio Calculator · v0.2</p>
+          <p class="eyebrow">Studio Calculator · v0.2.1</p>
           <h1>Trägt sich der Standort?</h1>
           <p class="hero__intro">
             Eine schnelle erste Einschätzung zu Ergebnis, Break-even und
@@ -61,14 +61,14 @@
               <label class="field">
                 <span>Kaltmiete je m²</span>
                 <span class="input-wrap">
-                  <input id="rentPerArea" name="rentPerArea" type="number" min="0" step="0.10" value="6" aria-describedby="rentSyncHint" />
+                  <input id="rentPerArea" name="rentPerArea" type="number" min="0" step="0.10" value="6" />
                   <span class="unit">€/m²</span>
                 </span>
               </label>
               <label class="field">
                 <span>Kaltmiete / Monat</span>
                 <span class="input-wrap">
-                  <input id="rent" name="rent" type="number" min="0" step="50" value="3000" aria-describedby="rentSyncHint" />
+                  <input id="rent" name="rent" type="number" min="0" step="50" value="3000" />
                   <span class="unit">€</span>
                 </span>
               </label>
@@ -80,10 +80,6 @@
                 </span>
               </label>
             </div>
-            <p class="field-hint" id="rentSyncHint">
-              Beide Mietfelder aktualisieren sich gegenseitig. Bei einer neuen
-              Fläche bleibt die Kaltmiete je m² maßgeblich.
-            </p>
           </fieldset>
 
           <fieldset>
@@ -442,7 +438,7 @@
     </main>
 
     <footer>
-      <p>Studio Calculator v0.2 · Statische Browser-App ohne Datenspeicherung</p>
+      <p>Studio Calculator v0.2.1 · Statische Browser-App ohne Datenspeicherung</p>
     </footer>
   </body>
 </html>

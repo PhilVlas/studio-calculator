@@ -1,6 +1,6 @@
 # Studio Calculator
 
-Studio Calculator v0.2 ist eine kleine, statische Web-App für die schnelle
+Studio Calculator v0.2.1 ist eine kleine, statische Web-App für die schnelle
 Rentabilitäts-, Kapitalbedarfs- und Finanzierungsrechnung von
 Fitnessstudio-Projekten.
 
@@ -40,7 +40,7 @@ geklont und vor der Arbeit aktualisiert. ChatGPT-Projekt/Work dient parallel als
 Zentrale für Gespräche, Anforderungen und Entscheidungen.
 
 Auf Smartphone und Tablet kann die über GitHub Pages veröffentlichte App direkt
-im Browser genutzt werden. Die Eingaben werden in v0.2 nicht zwischen Geräten
+im Browser genutzt werden. Die Eingaben werden in v0.2.1 nicht zwischen Geräten
 synchronisiert.
 
 ## Enthaltene Berechnungen

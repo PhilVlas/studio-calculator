@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.2
+v0.2.1
 
 ## Ziel
 
@@ -15,7 +15,7 @@ zu müssen.
 
 ## Ziel der aktuellen Version
 
-Version 0.2 bleibt technisch bewusst einfach:
+Version 0.2.1 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
@@ -154,7 +154,7 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.2 berücksichtigt insbesondere noch nicht:
+Version 0.2.1 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen
