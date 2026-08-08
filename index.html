@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Schnelle Rentabilitäts- und Kapitalbedarfsrechnung für Fitnessstudio-Projekte."
+    />
+    <meta name="theme-color" content="#10231f" />
+    <title>Studio Calculator</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__content">
+        <div>
+          <p class="eyebrow">Studio Calculator · v0.1</p>
+          <h1>Trägt sich der Standort?</h1>
+          <p class="hero__intro">
+            Eine schnelle erste Einschätzung zu Ergebnis, Break-even und
+            Kapitalbedarf – direkt im Gespräch.
+          </p>
+        </div>
+        <p class="privacy-note">
+          <span aria-hidden="true">●</span>
+          Alle Daten bleiben in diesem Browser
+        </p>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel input-panel" aria-labelledby="inputs-title">
+        <div class="panel__heading">
+          <div>
+            <p class="section-number">01</p>
+            <h2 id="inputs-title">Projektannahmen</h2>
+          </div>
+          <button class="text-button" id="resetButton" type="button">
+            Beispielwerte laden
+          </button>
+        </div>
+
+        <form id="calculatorForm">
+          <fieldset>
+            <legend>Standort</legend>
+            <label class="field field--wide">
+              <span>Projektname</span>
+              <input id="projectName" name="projectName" type="text" value="Studio Musterstadt" />
+            </label>
+
+            <div class="field-grid">
+              <label class="field">
+                <span>Fläche</span>
+                <span class="input-wrap">
+                  <input id="area" name="area" type="number" min="0" step="1" value="750" />
+                  <span class="unit">m²</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Kaltmiete / Monat</span>
+                <span class="input-wrap">
+                  <input id="rent" name="rent" type="number" min="0" step="100" value="7500" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Nebenkosten / Monat</span>
+                <span class="input-wrap">
+                  <input id="utilities" name="utilities" type="number" min="0" step="100" value="2200" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Mitglieder &amp; Beitrag</legend>
+            <div class="field-grid">
+              <label class="field">
+                <span>Mitglieder</span>
+                <span class="input-wrap">
+                  <input id="members" name="members" type="number" min="0" step="1" value="950" />
+                  <span class="unit">Pers.</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Monatsbeitrag brutto</span>
+                <span class="input-wrap">
+                  <input id="grossFee" name="grossFee" type="number" min="0" step="0.10" value="39.90" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Umsatzsteuer</span>
+                <span class="input-wrap">
+                  <input id="vatRate" name="vatRate" type="number" min="0" max="100" step="0.1" value="19" />
+                  <span class="unit">%</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Personal / Monat</legend>
+            <div class="field-grid">
+              <label class="field">
+                <span>Personalkosten Position 1</span>
+                <span class="input-wrap">
+                  <input id="personnelOne" name="personnelOne" type="number" min="0" step="100" value="14000" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Personalkosten Position 2</span>
+                <span class="input-wrap">
+                  <input id="personnelTwo" name="personnelTwo" type="number" min="0" step="100" value="4500" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Weitere Personalkosten</span>
+                <span class="input-wrap">
+                  <input id="otherPersonnel" name="otherPersonnel" type="number" min="0" step="100" value="0" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Weitere laufende Kosten / Monat</legend>
+            <div class="field-grid">
+              <label class="field">
+                <span>Marketing &amp; Vertrieb</span>
+                <span class="input-wrap">
+                  <input id="marketing" name="marketing" type="number" min="0" step="100" value="1500" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Sonstige Betriebskosten</span>
+                <span class="input-wrap">
+                  <input id="otherCosts" name="otherCosts" type="number" min="0" step="100" value="2500" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Investition &amp; Reserve</legend>
+            <div class="field-grid">
+              <label class="field">
+                <span>Geräte &amp; Ausstattung</span>
+                <span class="input-wrap">
+                  <input id="equipment" name="equipment" type="number" min="0" step="1000" value="180000" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Umbau &amp; Baukosten</span>
+                <span class="input-wrap">
+                  <input id="buildout" name="buildout" type="number" min="0" step="1000" value="120000" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Weitere Einmalkosten</span>
+                <span class="input-wrap">
+                  <input id="otherInvestment" name="otherInvestment" type="number" min="0" step="1000" value="25000" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Liquiditätsreserve</span>
+                <span class="input-wrap">
+                  <input id="reserveMonths" name="reserveMonths" type="number" min="0" max="24" step="1" value="3" />
+                  <span class="unit">Mon.</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+        </form>
+      </section>
+
+      <aside class="results-column" aria-labelledby="results-title" aria-live="polite">
+        <section class="result-card" id="resultCard" data-state="positive">
+          <div class="result-card__topline">
+            <div>
+              <p class="section-number section-number--light">02</p>
+              <h2 id="results-title">Ergebnis</h2>
+            </div>
+            <span class="assessment" id="assessment">Tragfähig</span>
+          </div>
+
+          <p class="result-project" id="resultProject">Studio Musterstadt</p>
+          <p class="result-label">Monatliches Betriebsergebnis</p>
+          <p class="result-value" id="monthlyResult">0 €</p>
+          <p class="result-subline" id="annualResult">0 € pro Jahr</p>
+
+          <div class="comparison" aria-label="Vergleich von Nettoumsatz und Kosten">
+            <div class="comparison__row">
+              <div class="comparison__label">
+                <span>Nettoumsatz</span>
+                <strong id="netRevenue">0 €</strong>
+              </div>
+              <div class="bar-track"><span id="revenueBar"></span></div>
+            </div>
+            <div class="comparison__row">
+              <div class="comparison__label">
+                <span>Laufende Kosten</span>
+                <strong id="monthlyCosts">0 €</strong>
+              </div>
+              <div class="bar-track bar-track--cost"><span id="costBar"></span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel kpi-panel" aria-label="Kennzahlen">
+          <div class="kpi-grid">
+            <article class="kpi">
+              <p>Break-even</p>
+              <strong id="breakEven">–</strong>
+              <span>Mitglieder</span>
+            </article>
+            <article class="kpi">
+              <p>Ergebnismarge</p>
+              <strong id="margin">–</strong>
+              <span>vom Nettoumsatz</span>
+            </article>
+            <article class="kpi">
+              <p>Ergebnis je m²</p>
+              <strong id="resultPerArea">–</strong>
+              <span>pro Monat</span>
+            </article>
+            <article class="kpi">
+              <p>Kapitalbedarf</p>
+              <strong id="capitalRequirement">–</strong>
+              <span>inkl. Reserve</span>
+            </article>
+            <article class="kpi kpi--wide">
+              <p>Rechnerische Amortisation</p>
+              <strong id="payback">–</strong>
+              <span>bei konstantem Ergebnis</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel insight-panel">
+          <p class="section-kicker">Einordnung</p>
+          <ul id="insights"></ul>
+        </section>
+
+        <details class="method-note">
+          <summary>Was wird hier berechnet?</summary>
+          <p>
+            Mitgliedsumsätze werden um die eingestellte Umsatzsteuer bereinigt.
+            Das Betriebsergebnis ist Nettoumsatz minus aller monatlichen Kosten.
+            Der Kapitalbedarf umfasst Einmalinvestitionen plus laufende Kosten
+            für die gewählten Reservemonate.
+          </p>
+          <p>
+            Die Kalkulation ist eine überschlägige Entscheidungshilfe und keine
+            Finanz-, Steuer- oder Rechtsberatung.
+          </p>
+        </details>
+      </aside>
+    </main>
+
+    <footer>
+      <p>Studio Calculator v0.1 · Statische Browser-App ohne Datenspeicherung</p>
+    </footer>
+  </body>
+</html>
