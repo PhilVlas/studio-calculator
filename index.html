@@ -50,25 +50,32 @@
               <input id="projectName" name="projectName" type="text" value="Studio Musterstadt" />
             </label>
 
-            <div class="field-grid">
+            <div class="field-grid field-grid--location">
               <label class="field">
                 <span>Fläche</span>
                 <span class="input-wrap">
-                  <input id="area" name="area" type="number" min="0" step="1" value="750" />
+                  <input id="area" name="area" type="number" min="0" step="1" value="500" />
                   <span class="unit">m²</span>
                 </span>
               </label>
               <label class="field">
-                <span>Kaltmiete / Monat</span>
+                <span>Kaltmiete je m²</span>
                 <span class="input-wrap">
-                  <input id="rent" name="rent" type="number" min="0" step="100" value="7500" />
+                  <input id="rentPerArea" name="rentPerArea" type="number" min="0" step="0.10" value="6" />
+                  <span class="unit">€/m²</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Kaltmiete / Monat</span>
+                <span class="input-wrap input-wrap--readonly">
+                  <input id="rent" name="rent" type="number" min="0" step="100" value="3000" readonly aria-readonly="true" />
                   <span class="unit">€</span>
                 </span>
               </label>
               <label class="field">
                 <span>Nebenkosten / Monat</span>
                 <span class="input-wrap">
-                  <input id="utilities" name="utilities" type="number" min="0" step="100" value="2200" />
+                  <input id="utilities" name="utilities" type="number" min="0" step="100" value="900" />
                   <span class="unit">€</span>
                 </span>
               </label>
@@ -81,7 +88,7 @@
               <label class="field">
                 <span>Mitglieder</span>
                 <span class="input-wrap">
-                  <input id="members" name="members" type="number" min="0" step="1" value="950" />
+                  <input id="members" name="members" type="number" min="0" step="1" value="500" />
                   <span class="unit">Pers.</span>
                 </span>
               </label>
@@ -108,14 +115,14 @@
               <label class="field">
                 <span>Personalkosten Position 1</span>
                 <span class="input-wrap">
-                  <input id="personnelOne" name="personnelOne" type="number" min="0" step="100" value="14000" />
+                  <input id="personnelOne" name="personnelOne" type="number" min="0" step="100" value="6000" />
                   <span class="unit">€</span>
                 </span>
               </label>
               <label class="field">
                 <span>Personalkosten Position 2</span>
                 <span class="input-wrap">
-                  <input id="personnelTwo" name="personnelTwo" type="number" min="0" step="100" value="4500" />
+                  <input id="personnelTwo" name="personnelTwo" type="number" min="0" step="100" value="1250" />
                   <span class="unit">€</span>
                 </span>
               </label>
@@ -135,7 +142,7 @@
               <label class="field">
                 <span>Marketing &amp; Vertrieb</span>
                 <span class="input-wrap">
-                  <input id="marketing" name="marketing" type="number" min="0" step="100" value="1500" />
+                  <input id="marketing" name="marketing" type="number" min="0" step="100" value="800" />
                   <span class="unit">€</span>
                 </span>
               </label>
@@ -143,6 +150,13 @@
                 <span>Sonstige Betriebskosten</span>
                 <span class="input-wrap">
                   <input id="otherCosts" name="otherCosts" type="number" min="0" step="100" value="2500" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Reinigung</span>
+                <span class="input-wrap">
+                  <input id="cleaning" name="cleaning" type="number" min="0" step="100" value="1000" />
                   <span class="unit">€</span>
                 </span>
               </label>
@@ -155,7 +169,7 @@
               <label class="field">
                 <span>Geräte &amp; Ausstattung</span>
                 <span class="input-wrap">
-                  <input id="equipment" name="equipment" type="number" min="0" step="1000" value="180000" />
+                  <input id="equipment" name="equipment" type="number" min="0" step="1000" value="100000" />
                   <span class="unit">€</span>
                 </span>
               </label>
@@ -169,7 +183,14 @@
               <label class="field">
                 <span>Weitere Einmalkosten</span>
                 <span class="input-wrap">
-                  <input id="otherInvestment" name="otherInvestment" type="number" min="0" step="1000" value="25000" />
+                  <input id="otherInvestment" name="otherInvestment" type="number" min="0" step="1000" value="10000" />
+                  <span class="unit">€</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Gründungskosten</span>
+                <span class="input-wrap">
+                  <input id="foundingCosts" name="foundingCosts" type="number" min="0" step="1000" value="30000" />
                   <span class="unit">€</span>
                 </span>
               </label>
@@ -199,14 +220,14 @@
                 <label class="field">
                   <span>Eigenkapital</span>
                   <span class="input-wrap">
-                    <input id="equity" name="equity" type="number" min="0" step="1000" value="150000" />
+                    <input id="equity" name="equity" type="number" min="0" step="1000" value="100000" />
                     <span class="unit">€</span>
                   </span>
                 </label>
                 <label class="field">
                   <span>Bankdarlehen</span>
                   <span class="input-wrap">
-                    <input id="bankLoan" name="bankLoan" type="number" min="0" step="1000" value="271600" />
+                    <input id="bankLoan" name="bankLoan" type="number" min="0" step="1000" value="200000" />
                     <span class="unit">€</span>
                   </span>
                 </label>
@@ -316,9 +337,9 @@
               <span>vom Nettoumsatz</span>
             </article>
             <article class="kpi">
-              <p>Ergebnis je m²</p>
+              <p>Operatives Ergebnis je m²</p>
               <strong id="resultPerArea">–</strong>
-              <span>pro Monat</span>
+              <span>pro Monat, vor Finanzierung</span>
             </article>
             <article class="kpi">
               <p>Kapitalbedarf</p>

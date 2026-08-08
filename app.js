@@ -1,22 +1,25 @@
 const defaults = {
   projectName: "Studio Musterstadt",
-  area: 750,
-  rent: 7500,
-  utilities: 2200,
-  members: 950,
+  area: 500,
+  rentPerArea: 6,
+  rent: 3000,
+  utilities: 900,
+  members: 500,
   grossFee: 39.9,
   vatRate: 19,
-  personnelOne: 14000,
-  personnelTwo: 4500,
+  personnelOne: 6000,
+  personnelTwo: 1250,
   otherPersonnel: 0,
-  marketing: 1500,
+  marketing: 800,
   otherCosts: 2500,
-  equipment: 180000,
+  cleaning: 1000,
+  equipment: 100000,
   buildout: 120000,
-  otherInvestment: 25000,
+  otherInvestment: 10000,
+  foundingCosts: 30000,
   reserveMonths: 3,
-  equity: 150000,
-  bankLoan: 271600,
+  equity: 100000,
+  bankLoan: 200000,
   grants: 0,
   leaseFinancing: 0,
   loanInterest: 5.5,
@@ -36,6 +39,13 @@ const euro = new Intl.NumberFormat("de-DE", {
   style: "currency",
   currency: "EUR",
   maximumFractionDigits: 0,
+});
+
+const euroDetailed = new Intl.NumberFormat("de-DE", {
+  style: "currency",
+  currency: "EUR",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
 });
 
 const decimal = new Intl.NumberFormat("de-DE", {
@@ -66,7 +76,8 @@ function annuityPayment(principal, monthlyInterest, months) {
 
 function calculate() {
   const area = value("area");
-  const rent = value("rent");
+  const rent = area * value("rentPerArea");
+  document.querySelector("#rent").value = rent.toFixed(2);
   const utilities = value("utilities");
   const members = value("members");
   const grossFee = value("grossFee");
@@ -76,7 +87,12 @@ function calculate() {
   const personnel =
     value("personnelOne") + value("personnelTwo") + value("otherPersonnel");
   const monthlyCosts =
-    rent + utilities + personnel + value("marketing") + value("otherCosts");
+    rent +
+    utilities +
+    personnel +
+    value("marketing") +
+    value("otherCosts") +
+    value("cleaning");
   const grossRevenue = members * grossFee;
   const netFee = grossFee / (1 + vatRate / 100);
   const netRevenue = grossRevenue / (1 + vatRate / 100);
@@ -87,7 +103,10 @@ function calculate() {
   const resultPerArea = area > 0 ? monthlyResult / area : null;
 
   const investment =
-    value("equipment") + value("buildout") + value("otherInvestment");
+    value("equipment") +
+    value("buildout") +
+    value("otherInvestment") +
+    value("foundingCosts");
   const liquidityReserve = monthlyCosts * reserveMonths;
   const capitalRequirement = investment + liquidityReserve;
   lastCapitalRequirement = capitalRequirement;
@@ -134,7 +153,7 @@ function calculate() {
   setText("margin", margin === null ? "–" : `${decimal.format(margin)} %`);
   setText(
     "resultPerArea",
-    resultPerArea === null ? "–" : `${euro.format(resultPerArea)} / m²`,
+    resultPerArea === null ? "–" : `${euroDetailed.format(resultPerArea)} / m²`,
   );
   setText("capitalRequirement", euro.format(capitalRequirement));
   setText("payback", formatMonths(paybackMonths));

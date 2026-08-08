@@ -199,6 +199,10 @@ legend {
   gap: 16px;
 }
 
+.field-grid--location {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .finance-fieldset {
   padding-top: 26px;
 }
@@ -494,6 +498,15 @@ input {
   letter-spacing: -0.025em;
 }
 
+.input-wrap--readonly {
+  background: #f0f3f1;
+}
+
+.input-wrap--readonly input {
+  color: #59655f;
+  cursor: default;
+}
+
 .finance-panel {
   overflow: hidden;
 }
@@ -753,6 +766,7 @@ footer {
   }
 
   .field-grid,
+  .field-grid--location,
   .finance-input-group .field-grid,
   .results-column {
     grid-template-columns: 1fr;

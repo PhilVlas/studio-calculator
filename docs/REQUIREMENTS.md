@@ -31,7 +31,8 @@ Version 0.2 bleibt technisch bewusst einfach:
 
 - Projektname
 - Fläche in m²
-- monatliche Kaltmiete
+- Kaltmiete je m²
+- automatisch berechnete monatliche Kaltmiete
 - monatliche Nebenkosten
 
 ### Mitglieder
@@ -50,12 +51,14 @@ Version 0.2 bleibt technisch bewusst einfach:
 
 - Marketing und Vertrieb
 - sonstige monatliche Betriebskosten
+- Reinigungskosten
 
 ### Investition und Reserve
 
 - Geräte und Ausstattung
 - Umbau und Baukosten
 - weitere Einmalkosten
+- Gründungskosten
 - Anzahl Monate Liquiditätsreserve
 
 ### Finanzierung
@@ -77,8 +80,9 @@ Version 0.2 bleibt technisch bewusst einfach:
 
 ### Monatliche Betriebskosten
 
-Summe aus Kaltmiete, Nebenkosten, allen Personalkosten, Marketing und sonstigen
-Betriebskosten.
+Die monatliche Kaltmiete ergibt sich aus Fläche × Kaltmiete je m². Die
+Betriebskosten sind die Summe aus Kaltmiete, Nebenkosten, allen
+Personalkosten, Marketing, sonstigen Betriebskosten und Reinigung.
 
 ### Monatliches Betriebsergebnis
 
@@ -92,7 +96,7 @@ Abschreibungen, Ertragsteuern und Sondereffekten.
 - Jahresergebnis: monatliches Betriebsergebnis × 12
 - Ergebnismarge: Betriebsergebnis ÷ Nettoumsatz
 - Break-even-Mitglieder: Betriebskosten ÷ Netto-Beitrag je Mitglied, aufgerundet
-- Ergebnis pro m²: Betriebsergebnis ÷ Fläche
+- operatives Ergebnis pro m² und Monat: Betriebsergebnis ÷ Fläche
 - Liquiditätsreserve: monatliche Betriebskosten × Reservemonate
 - Kapitalbedarf: Einmalinvestitionen + Liquiditätsreserve
 - rechnerische Amortisation: Kapitalbedarf ÷ positives Monatsbetriebsergebnis
