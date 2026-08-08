@@ -123,6 +123,76 @@ h2 {
   color: var(--green);
 }
 
+.hero__app-tools {
+  display: grid;
+  justify-items: end;
+  gap: 9px;
+}
+
+.install-button {
+  padding: 10px 15px;
+  color: var(--forest);
+  border: 1px solid var(--green);
+  border-radius: 999px;
+  background: var(--green);
+  font-size: 0.78rem;
+  font-weight: 820;
+  cursor: pointer;
+}
+
+.install-button:hover {
+  background: #d2ffad;
+}
+
+.install-button:focus-visible,
+.update-notice button:focus-visible {
+  outline: 3px solid rgba(184, 239, 140, 0.35);
+  outline-offset: 3px;
+}
+
+.install-status {
+  min-height: 1em;
+  margin: 0 4px;
+  color: #aebdb7;
+  font-size: 0.68rem;
+  text-align: right;
+}
+
+.update-notice {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: calc(100vw - 36px);
+  padding: 13px 14px 13px 17px;
+  color: #f7faf7;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: var(--forest);
+  box-shadow: 0 16px 42px rgba(16, 35, 31, 0.24);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.update-notice[hidden] {
+  display: none;
+}
+
+.update-notice button {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  color: var(--forest);
+  border: 0;
+  border-radius: 8px;
+  background: var(--green);
+  font-size: 0.72rem;
+  font-weight: 820;
+  cursor: pointer;
+}
+
 .app-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.42fr) minmax(340px, 0.82fr);
@@ -1228,7 +1298,15 @@ footer {
 
   .privacy-note {
     width: fit-content;
-    margin-top: 24px;
+    margin: 24px 0 0;
+  }
+
+  .hero__app-tools {
+    justify-items: start;
+  }
+
+  .install-status {
+    text-align: left;
   }
 
   .app-layout {
@@ -1375,6 +1453,14 @@ footer {
   footer {
     padding-inline: 18px;
   }
+
+  .update-notice {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    justify-content: space-between;
+    max-width: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1391,7 +1477,7 @@ footer {
   margin: 13mm 13mm 18mm;
 
   @bottom-center {
-    content: "Studio Calculator · Seite " counter(page) " von " counter(pages);
+    content: "Studiocalculator · Seite " counter(page) " von " counter(pages);
     color: #68736f;
     font-family: Arial, sans-serif;
     font-size: 7pt;

@@ -32,8 +32,9 @@ const defaults = {
   scenarioVariance: 15,
 };
 
-const APP_VERSION = "0.5.2";
-const PROJECT_FILE_FORMAT = "studio-calculator-project";
+const APP_VERSION = "0.6.0";
+const PROJECT_FILE_FORMAT = "studiocalculator-project";
+const LEGACY_PROJECT_FILE_FORMATS = new Set(["studio-calculator-project"]);
 const PROJECT_SCHEMA_VERSION = 1;
 const MAX_PROJECT_FILE_SIZE = 100 * 1024;
 const MAX_SHARE_PAYLOAD_LENGTH = 12000;
@@ -55,6 +56,10 @@ const savedProjectSelect = document.querySelector("#savedProjectSelect");
 const loadProjectButton = document.querySelector("#loadProjectButton");
 const deleteProjectButton = document.querySelector("#deleteProjectButton");
 const projectFileInput = document.querySelector("#projectFileInput");
+const installAppButton = document.querySelector("#installAppButton");
+const installStatus = document.querySelector("#installStatus");
+const updateNotice = document.querySelector("#updateNotice");
+const updateAppButton = document.querySelector("#updateAppButton");
 let lastCapitalRequirement = 0;
 let lastReportData = null;
 let activeProjectId = null;
@@ -355,7 +360,8 @@ function buildProjectPayload() {
 
 function validateProjectPayload(payload) {
   if (
-    payload?.format !== PROJECT_FILE_FORMAT ||
+    (payload?.format !== PROJECT_FILE_FORMAT &&
+      !LEGACY_PROJECT_FILE_FORMATS.has(payload?.format)) ||
     payload.schemaVersion !== PROJECT_SCHEMA_VERSION ||
     !payload.project?.data ||
     typeof payload.project.data !== "object"
@@ -376,7 +382,7 @@ function buildProjectFile() {
     .slice(0, 80);
   return {
     blob: new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }),
-    filename: `${safeName || "Studio-Projekt"}.studio-calculator.json`,
+    filename: `${safeName || "Studio-Projekt"}.studiocalculator.json`,
     name,
   };
 }
@@ -426,8 +432,8 @@ async function shareProjectLink() {
   if (typeof navigator.share === "function") {
     try {
       await navigator.share({
-        title: `${sharedProject.name} · Studio Calculator`,
-        text: "Studio-Calculator-Projekt direkt öffnen und weiterbearbeiten.",
+        title: `${sharedProject.name} · Studiocalculator`,
+        text: "Studiocalculator-Projekt direkt öffnen und weiterbearbeiten.",
         url: sharedProject.url,
       });
       setStorageStatus("Freigabelink zur Weitergabe geöffnet", "saved");
@@ -1138,7 +1144,7 @@ document.querySelector("#pdfButton").addEventListener("click", () => {
   preparePrintReport();
   const originalTitle = document.title;
   const safeProjectName = lastReportData.projectName.replace(/[\\/:*?"<>|]/g, "-");
-  document.title = `${safeProjectName} – Studio Calculator`;
+  document.title = `${safeProjectName} – Studiocalculator`;
   window.addEventListener(
     "afterprint",
     () => {
@@ -1168,4 +1174,119 @@ window.addEventListener("hashchange", () => {
   }
 });
 
+let deferredInstallPrompt = null;
+let appReloading = false;
+let serviceWorkerControlled = Boolean(navigator.serviceWorker?.controller);
+
+function isAppMode() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true
+  );
+}
+
+function isIOSDevice() {
+  return (
+    /iphone|ipad|ipod/i.test(window.navigator.userAgent) ||
+    (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1)
+  );
+}
+
+function showInstallOption() {
+  if (isAppMode()) {
+    installAppButton.hidden = true;
+    installStatus.textContent = "Als App geöffnet";
+    return;
+  }
+
+  if (deferredInstallPrompt) {
+    installAppButton.hidden = false;
+    installAppButton.textContent = "App installieren";
+    installStatus.textContent = "";
+    return;
+  }
+
+  if (isIOSDevice()) {
+    installAppButton.hidden = false;
+    installAppButton.textContent = "Zum Home-Bildschirm";
+    installStatus.textContent = "";
+  }
+}
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  showInstallOption();
+});
+
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  installAppButton.hidden = true;
+  installStatus.textContent = "App wurde installiert";
+});
+
+installAppButton.addEventListener("click", async () => {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    showInstallOption();
+    return;
+  }
+
+  if (isIOSDevice()) {
+    window.alert(
+      "Auf dem iPhone oder iPad: Unten auf „Teilen“ tippen und anschließend „Zum Home-Bildschirm“ wählen.",
+    );
+  }
+});
+
+function showUpdateNotice(worker) {
+  updateNotice.hidden = false;
+  updateAppButton.onclick = () => worker.postMessage({ type: "SKIP_WAITING" });
+}
+
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+
+  try {
+    const registration = await navigator.serviceWorker.register("service-worker.js", {
+      scope: "./",
+    });
+
+    if (registration.waiting && navigator.serviceWorker.controller) {
+      showUpdateNotice(registration.waiting);
+    }
+
+    registration.addEventListener("updatefound", () => {
+      const installingWorker = registration.installing;
+      if (!installingWorker) return;
+      installingWorker.addEventListener("statechange", () => {
+        if (
+          installingWorker.state === "installed" &&
+          navigator.serviceWorker.controller
+        ) {
+          showUpdateNotice(installingWorker);
+        }
+      });
+    });
+
+    window.setTimeout(() => registration.update(), 2500);
+  } catch {
+    installStatus.textContent = "Offline-Nutzung ist in diesem Browser nicht verfügbar";
+  }
+}
+
+navigator.serviceWorker?.addEventListener("controllerchange", () => {
+  if (!serviceWorkerControlled) {
+    serviceWorkerControlled = true;
+    return;
+  }
+  if (appReloading) return;
+  appReloading = true;
+  window.location.reload();
+});
+
+showInstallOption();
+registerServiceWorker();
 initializeProjectStorage();

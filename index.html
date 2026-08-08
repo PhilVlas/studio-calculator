@@ -8,25 +8,39 @@
       content="Schnelle Rentabilitäts- und Kapitalbedarfsrechnung für Fitnessstudio-Projekte."
     />
     <meta name="theme-color" content="#10231f" />
-    <title>Studio Calculator</title>
-    <link rel="stylesheet" href="styles.css?v=0.5.2" />
-    <script src="app.js?v=0.5.2" defer></script>
+    <meta name="application-name" content="Studiocalculator" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Studiocalculator" />
+    <title>Studiocalculator</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.png" type="image/png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="styles.css?v=0.6.0" />
+    <script src="app.js?v=0.6.0" defer></script>
   </head>
   <body>
     <header class="hero">
       <div class="hero__content">
         <div>
-          <p class="eyebrow">Studio Calculator · v0.5.2</p>
+          <p class="eyebrow">Studiocalculator · v0.6.0</p>
           <h1>Trägt sich der Standort?</h1>
           <p class="hero__intro">
             Eine schnelle erste Einschätzung zu Ergebnis, Break-even und
             Kapitalbedarf – direkt im Gespräch.
           </p>
         </div>
-        <p class="privacy-note">
-          <span aria-hidden="true">●</span>
-          Alle Daten bleiben in diesem Browser
-        </p>
+        <div class="hero__app-tools">
+          <p class="privacy-note">
+            <span aria-hidden="true">●</span>
+            Alle Daten bleiben in diesem Browser
+          </p>
+          <button class="install-button" id="installAppButton" type="button" hidden>
+            App installieren
+          </button>
+          <p class="install-status" id="installStatus" aria-live="polite"></p>
+        </div>
       </div>
     </header>
 
@@ -97,7 +111,7 @@
                 class="visually-hidden"
                 id="projectFileInput"
                 type="file"
-                accept=".json,.studio-calculator.json,application/json"
+                accept=".json,.studiocalculator.json,.studio-calculator.json,application/json"
                 tabindex="-1"
               />
             </div>
@@ -680,7 +694,7 @@
     <section class="print-report" id="printReport" aria-hidden="true">
       <header class="print-header">
         <div>
-          <p class="print-brand">Studio Calculator · v0.5.2</p>
+          <p class="print-brand">Studiocalculator · v0.6.0</p>
           <h1 id="printProjectName">Studio Musterstadt</h1>
           <p>Wirtschaftlichkeits- und Finanzierungsübersicht</p>
         </div>
@@ -810,7 +824,12 @@
     </section>
 
     <footer>
-      <p>Studio Calculator v0.5.2 · Lokale Speicherung ohne Serverübertragung</p>
+      <p>Studiocalculator v0.6.0 · Installierbar und lokal nutzbar</p>
     </footer>
+
+    <aside class="update-notice" id="updateNotice" aria-live="polite" hidden>
+      <span>Eine neue Version ist verfügbar.</span>
+      <button id="updateAppButton" type="button">Jetzt aktualisieren</button>
+    </aside>
   </body>
 </html>

@@ -1,13 +1,14 @@
-# Studio Calculator
+# Studiocalculator
 
 ## Version
 
-v0.5.2
+v0.6.0
 
 ## Ziel
 
-Studio Calculator ist eine kleine Webanwendung zur schnellen, überschlägigen
-Rentabilitäts- und Kapitalbedarfsberechnung von Fitnessstudio-Projekten.
+Studiocalculator ist eine kleine, installierbare Webanwendung zur schnellen,
+überschlägigen Rentabilitäts- und Kapitalbedarfsberechnung von
+Fitnessstudio-Projekten.
 
 Die Anwendung soll während Gesprächen und Projektbewertungen eine direkte
 Einschätzung ermöglichen, ohne dafür eine umfangreiche Excel-Kalkulation öffnen
@@ -234,9 +235,26 @@ Die Anwendung zeigt:
   Serverlogik lokal geöffnet oder aus der Cloud bereitgestellt werden.
 - Ein GitHub-Actions-Ablauf für GitHub Pages liegt im Repository bereit.
 
+## Installation und Offline-Nutzung
+
+- Die veröffentlichte Anwendung erfüllt die technischen Grundlagen einer
+  installierbaren Progressive Web App.
+- Das Web-App-Manifest enthält Name, Kurzname, Farben und App-Symbole in den
+  erforderlichen Größen einschließlich eines maskierbaren Symbols.
+- Geeignete Browser bieten die Installation über die Anwendung oder ihr eigenes
+  Browsermenü an. Auf iPhone und iPad weist die Anwendung auf die Funktion
+  „Zum Home-Bildschirm“ hin.
+- Nach einem ersten vollständigen Online-Aufruf kann die Anwendungsoberfläche
+  ohne Internetverbindung gestartet werden.
+- Eine neue veröffentlichte Version ersetzt nicht ungefragt die aktuell
+  geöffnete Oberfläche. Die Anwendung weist auf das Update hin und aktualisiert
+  nach Bestätigung.
+- Offline-Speicherung und Installation ändern nichts am lokalen Datenmodell:
+  Projekte verbleiben weiterhin ausschließlich auf dem jeweiligen Gerät.
+
 ## Abgrenzung
 
-Version 0.5.2 berücksichtigt insbesondere noch nicht:
+Version 0.6.0 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen
@@ -270,3 +288,9 @@ Steuer- oder Rechtsberatung.
     entfernt.
 12. Die Bedienung verursacht auch bei exakt 320 px Viewportbreite keinen
     horizontalen Seitenlauf.
+13. Die veröffentlichte Anwendung kann in unterstützten Browsern installiert
+    und anschließend in einem eigenen App-Fenster gestartet werden.
+14. Nach einem ersten vollständigen Online-Aufruf lässt sich die Oberfläche bei
+    unterbrochener Internetverbindung erneut öffnen.
+15. Bei einer neuen Version erscheint ein Aktualisierungshinweis, ohne den
+    aktuellen Arbeitsstand ungefragt zu unterbrechen.
