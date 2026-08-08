@@ -203,6 +203,13 @@ legend {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.field-hint {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.71rem;
+  line-height: 1.45;
+}
+
 .finance-fieldset {
   padding-top: 26px;
 }
@@ -496,15 +503,6 @@ input {
   margin-bottom: 2px;
   font-size: 1.25rem;
   letter-spacing: -0.025em;
-}
-
-.input-wrap--readonly {
-  background: #f0f3f1;
-}
-
-.input-wrap--readonly input {
-  color: #59655f;
-  cursor: default;
 }
 
 .finance-panel {

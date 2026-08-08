@@ -61,14 +61,14 @@
               <label class="field">
                 <span>Kaltmiete je m²</span>
                 <span class="input-wrap">
-                  <input id="rentPerArea" name="rentPerArea" type="number" min="0" step="0.10" value="6" />
+                  <input id="rentPerArea" name="rentPerArea" type="number" min="0" step="0.10" value="6" aria-describedby="rentSyncHint" />
                   <span class="unit">€/m²</span>
                 </span>
               </label>
               <label class="field">
                 <span>Kaltmiete / Monat</span>
-                <span class="input-wrap input-wrap--readonly">
-                  <input id="rent" name="rent" type="number" min="0" step="100" value="3000" readonly aria-readonly="true" />
+                <span class="input-wrap">
+                  <input id="rent" name="rent" type="number" min="0" step="50" value="3000" aria-describedby="rentSyncHint" />
                   <span class="unit">€</span>
                 </span>
               </label>
@@ -80,6 +80,10 @@
                 </span>
               </label>
             </div>
+            <p class="field-hint" id="rentSyncHint">
+              Beide Mietfelder aktualisieren sich gegenseitig. Bei einer neuen
+              Fläche bleibt die Kaltmiete je m² maßgeblich.
+            </p>
           </fieldset>
 
           <fieldset>
@@ -88,7 +92,7 @@
               <label class="field">
                 <span>Mitglieder</span>
                 <span class="input-wrap">
-                  <input id="members" name="members" type="number" min="0" step="1" value="500" />
+                  <input id="members" name="members" type="number" min="0" step="1" value="750" />
                   <span class="unit">Pers.</span>
                 </span>
               </label>
@@ -176,7 +180,7 @@
               <label class="field">
                 <span>Umbau &amp; Baukosten</span>
                 <span class="input-wrap">
-                  <input id="buildout" name="buildout" type="number" min="0" step="1000" value="120000" />
+                  <input id="buildout" name="buildout" type="number" min="0" step="1000" value="50000" />
                   <span class="unit">€</span>
                 </span>
               </label>

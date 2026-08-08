@@ -4,7 +4,7 @@ const defaults = {
   rentPerArea: 6,
   rent: 3000,
   utilities: 900,
-  members: 500,
+  members: 750,
   grossFee: 39.9,
   vatRate: 19,
   personnelOne: 6000,
@@ -14,7 +14,7 @@ const defaults = {
   otherCosts: 2500,
   cleaning: 1000,
   equipment: 100000,
-  buildout: 120000,
+  buildout: 50000,
   otherInvestment: 10000,
   foundingCosts: 30000,
   reserveMonths: 3,
@@ -74,10 +74,23 @@ function annuityPayment(principal, monthlyInterest, months) {
   return principal * (monthlyInterest / (1 - (1 + monthlyInterest) ** -months));
 }
 
+function syncRentFields(sourceId) {
+  const area = value("area");
+  const rentInput = document.querySelector("#rent");
+  const rentPerAreaInput = document.querySelector("#rentPerArea");
+
+  if (sourceId === "rent") {
+    const rentPerArea = area > 0 ? value("rent") / area : 0;
+    rentPerAreaInput.value = rentPerArea.toFixed(2);
+  } else if (sourceId === "rentPerArea" || sourceId === "area") {
+    const monthlyRent = area * value("rentPerArea");
+    rentInput.value = monthlyRent.toFixed(2);
+  }
+}
+
 function calculate() {
   const area = value("area");
-  const rent = area * value("rentPerArea");
-  document.querySelector("#rent").value = rent.toFixed(2);
+  const rent = value("rent");
   const utilities = value("utilities");
   const members = value("members");
   const grossFee = value("grossFee");
@@ -268,7 +281,10 @@ function calculate() {
   );
 }
 
-form.addEventListener("input", calculate);
+form.addEventListener("input", (event) => {
+  syncRentFields(event.target.id);
+  calculate();
+});
 
 document.querySelector("#resetButton").addEventListener("click", () => {
   Object.entries(defaults).forEach(([id, defaultValue]) => {

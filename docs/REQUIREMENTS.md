@@ -32,7 +32,7 @@ Version 0.2 bleibt technisch bewusst einfach:
 - Projektname
 - Fläche in m²
 - Kaltmiete je m²
-- automatisch berechnete monatliche Kaltmiete
+- alternativ direkt eingebbare monatliche Kaltmiete
 - monatliche Nebenkosten
 
 ### Mitglieder
@@ -83,6 +83,10 @@ Version 0.2 bleibt technisch bewusst einfach:
 Die monatliche Kaltmiete ergibt sich aus Fläche × Kaltmiete je m². Die
 Betriebskosten sind die Summe aus Kaltmiete, Nebenkosten, allen
 Personalkosten, Marketing, sonstigen Betriebskosten und Reinigung.
+
+Kaltmiete je m² und monatliche Kaltmiete aktualisieren sich wechselseitig. Bei
+einer Änderung der Fläche bleibt die Kaltmiete je m² bestehen und die
+Monatsmiete wird neu berechnet.
 
 ### Monatliches Betriebsergebnis
 

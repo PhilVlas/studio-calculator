@@ -46,7 +46,7 @@ synchronisiert.
 ## Enthaltene Berechnungen
 
 - operative Rentabilität, Break-even, Marge und Kapitalbedarf
-- automatische Monatsmiete aus Fläche und Kaltmiete je m²
+- wechselseitige Berechnung von Monatsmiete und Kaltmiete je m²
 - Eigenkapital, Bankdarlehen, Fördermittel und leasingfinanzierter Anteil
 - vereinfachte Annuitätenrechnung mit Zins, Laufzeit und tilgungsfreier Anlaufzeit
 - Finanzierungssaldo, Eigenkapitalquote und monatlicher Schuldendienst
