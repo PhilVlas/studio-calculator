@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.5.1
+v0.5.2
 
 ## Ziel
 
@@ -15,7 +15,7 @@ zu müssen.
 
 ## Ziel der aktuellen Version
 
-Version 0.5.1 bleibt technisch bewusst einfach:
+Version 0.5.2 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
@@ -195,6 +195,8 @@ reguläre Tilgungsphase nach einer gegebenenfalls tilgungsfreien Anlaufzeit.
   Browser liest und verarbeitet die enthaltenen Projektdaten lokal.
 - Beim Öffnen wird das Projektformat geprüft und es werden ausschließlich die
   bekannten Calculator-Eingabefelder übernommen.
+- Ein neuer Freigabelink wird auch dann sofort verarbeitet, wenn der Calculator
+  im betreffenden Browser-Tab bereits geöffnet ist.
 - Das empfangene Projekt ersetzt den aktuellen lokalen Entwurf, wird aber nicht
   automatisch in die benannte Projektliste aufgenommen.
 - Nach erfolgreichem oder fehlgeschlagenem Einlesen entfernt die App den
@@ -234,7 +236,7 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.5.1 berücksichtigt insbesondere noch nicht:
+Version 0.5.2 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen
@@ -266,3 +268,5 @@ Steuer- oder Rechtsberatung.
 11. Ein gültiger Freigabelink öffnet das enthaltene Projekt direkt, ein
     ungültiger Link wird zurückgewiesen und anschließend aus der Adresszeile
     entfernt.
+12. Die Bedienung verursacht auch bei exakt 320 px Viewportbreite keinen
+    horizontalen Seitenlauf.

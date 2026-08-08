@@ -32,7 +32,7 @@ const defaults = {
   scenarioVariance: 15,
 };
 
-const APP_VERSION = "0.5.1";
+const APP_VERSION = "0.5.2";
 const PROJECT_FILE_FORMAT = "studio-calculator-project";
 const PROJECT_SCHEMA_VERSION = 1;
 const MAX_PROJECT_FILE_SIZE = 100 * 1024;
@@ -1159,6 +1159,13 @@ window.addEventListener("beforeunload", () => {
 
 window.addEventListener("storage", (event) => {
   if (event.key === STORAGE_KEYS.projects) renderSavedProjects(activeProjectId);
+});
+
+window.addEventListener("hashchange", () => {
+  const sharedProjectState = openSharedProjectFromUrl();
+  if (sharedProjectState === "invalid") {
+    setStorageStatus("Dieser Freigabelink ist ungültig oder beschädigt", "error");
+  }
 });
 
 initializeProjectStorage();

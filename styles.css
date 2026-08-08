@@ -26,7 +26,7 @@ html {
 
 body {
   margin: 0;
-  min-width: 320px;
+  min-width: 0;
   color: var(--ink);
   background:
     radial-gradient(circle at 10% 0%, rgba(184, 239, 140, 0.18), transparent 25rem),
@@ -1242,24 +1242,30 @@ footer {
     border-radius: 18px;
   }
 
+  .input-panel {
+    min-width: 0;
+  }
+
   .panel__heading {
-    align-items: flex-start;
+    display: block;
   }
 
   .panel-actions {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 16px;
   }
 
   .text-button {
-    max-width: 100px;
-    padding-top: 0;
-    text-align: right;
+    max-width: none;
+    padding: 10px 8px;
+    text-align: center;
   }
 
   .primary-button {
-    max-width: 128px;
+    width: 100%;
+    max-width: none;
     text-align: center;
   }
 

@@ -1,6 +1,6 @@
 # Studio Calculator
 
-Studio Calculator v0.5.1 ist eine kleine, statische Web-App für die schnelle
+Studio Calculator v0.5.2 ist eine kleine, statische Web-App für die schnelle
 Rentabilitäts-, Kapitalbedarfs- und Finanzierungsrechnung von
 Fitnessstudio-Projekten.
 
@@ -41,7 +41,7 @@ Zentrale für Gespräche, Anforderungen und Entscheidungen.
 
 Auf Smartphone und Tablet kann die über GitHub Pages veröffentlichte App direkt
 im Browser genutzt werden. Der aktuelle Entwurf und benannte Projekte werden in
-v0.5.1 lokal im jeweiligen Browser gespeichert. Ein Freigabelink ermöglicht den
+v0.5.2 lokal im jeweiligen Browser gespeichert. Ein Freigabelink ermöglicht den
 direkten Wechsel auf ein anderes Gerät oder die Weitergabe an Teammitglieder;
 eine automatische Cloud-Synchronisierung findet weiterhin nicht statt.
 
@@ -54,7 +54,8 @@ eine automatische Cloud-Synchronisierung findet weiterhin nicht statt.
 - **Freigabelink teilen** öffnet auf geeigneten Geräten das Teilen-Menü. Falls
   dieses nicht verfügbar ist, wird der Link kopiert.
 - Der empfangene Freigabelink öffnet das Projekt direkt im Studio Calculator und
-  speichert es auf dem Zielgerät zunächst als aktuellen Entwurf.
+  speichert es auf dem Zielgerät zunächst als aktuellen Entwurf. Das funktioniert
+  auch, wenn der Calculator im verwendeten Tab bereits geöffnet ist.
 - **Projektdatei herunterladen** erzeugt eine zusätzliche lokale Sicherung.
 - **Projektdatei öffnen** übernimmt eine zuvor erzeugte
   `.studio-calculator.json`-Datei und speichert sie als aktuellen Entwurf.
