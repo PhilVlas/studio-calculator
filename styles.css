@@ -914,6 +914,11 @@ input {
   text-align: right;
 }
 
+.finance-details p {
+  margin: 12px 0 0;
+  line-height: 1.6;
+}
+
 .insight-panel {
   padding: 22px 24px;
 }

@@ -1,6 +1,6 @@
 # Studiocalculator
 
-Studiocalculator v0.7.0 ist eine kleine, installierbare Web-App für die schnelle
+Studiocalculator v0.8.0 ist eine kleine, installierbare Web-App für die schnelle
 Rentabilitäts-, Kapitalbedarfs- und Finanzierungsrechnung von
 Fitnessstudio-Projekten.
 
@@ -47,7 +47,7 @@ Zentrale für Gespräche, Anforderungen und Entscheidungen.
 Auf Smartphone, Tablet und Computer kann die über GitHub Pages veröffentlichte
 App direkt im Browser genutzt und auf geeigneten Geräten installiert werden.
 Nach dem ersten erfolgreichen Aufruf steht die App auch ohne Internetverbindung
-zur Verfügung. Der aktuelle Entwurf und benannte Projekte werden in v0.7.0 lokal
+zur Verfügung. Der aktuelle Entwurf und benannte Projekte werden in v0.8.0 lokal
 im jeweiligen Browser gespeichert. Ein Freigabelink ermöglicht den
 direkten Wechsel auf ein anderes Gerät oder die Weitergabe an Teammitglieder;
 eine automatische Cloud-Synchronisierung findet weiterhin nicht statt.
@@ -89,6 +89,7 @@ nicht an den Webserver übertragen.
 - operative Rentabilität, Break-even, Marge und Kapitalbedarf
 - mietfreie Anlaufzeit im monatlichen Cashflow-Hochlauf
 - Projekt-ROI als Jahresbetriebsergebnis im Verhältnis zum Kapitalbedarf
+- monatsgenaue Prüfung, wann der kumulierte Cashflow den Kapitalbedarf zurückverdient
 - wechselseitige Berechnung von Monatsmiete und Kaltmiete je m²
 - Eigenkapital, Bankdarlehen, Fördermittel und leasingfinanzierter Anteil
 - vereinfachte Annuitätenrechnung mit Zins, Laufzeit und tilgungsfreier Anlaufzeit

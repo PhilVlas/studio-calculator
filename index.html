@@ -17,8 +17,8 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icons/studiocalculator-192-v1.png" type="image/png" />
     <link rel="apple-touch-icon" href="icons/studiocalculator-apple-180-v1.png" />
-    <link rel="stylesheet" href="styles.css?v=0.7.0" />
-    <script src="app.js?v=0.7.0" defer></script>
+    <link rel="stylesheet" href="styles.css?v=0.8.0" />
+    <script src="app.js?v=0.8.0" defer></script>
   </head>
   <body>
     <header class="hero">
@@ -32,7 +32,7 @@
               width="48"
               height="48"
             />
-            <p class="eyebrow">Studiocalculator · v0.7.0</p>
+            <p class="eyebrow">Studiocalculator · v0.8.0</p>
           </div>
           <h1>Trägt sich der Standort?</h1>
           <p class="hero__intro">
@@ -487,6 +487,29 @@
               <span>bei konstantem Ergebnis</span>
             </article>
           </div>
+
+          <details class="finance-details kpi-details">
+            <summary>Weitere Details</summary>
+            <dl>
+              <div>
+                <dt>Gesamtkapital im Cashflow zurückverdient</dt>
+                <dd id="capitalRecoveryMonth">–</dd>
+              </div>
+            </dl>
+            <p>
+              Ein positiver Monats-Cashflow bedeutet nur, dass der einzelne Monat
+              einen Überschuss erzielt. Das Gesamtkapital ist erst zurückverdient,
+              wenn der kumulierte Cashflow nach Finanzierung mindestens den
+              vollständigen Kapitalbedarf erreicht.
+            </p>
+            <p>
+              Diese Hochlauf-Betrachtung berücksichtigt die Mitgliederentwicklung,
+              die mietfreie Anlaufzeit sowie Kredit- und Leasingraten innerhalb des
+              gewählten Betrachtungszeitraums. Die oben angezeigte rechnerische
+              Amortisation bleibt eine vereinfachte Vergleichszahl bei konstantem
+              Betriebsergebnis vor Finanzierung.
+            </p>
+          </details>
         </section>
 
         <section class="panel finance-panel" aria-labelledby="finance-results-title">
@@ -719,7 +742,7 @@
         <div>
           <div class="print-brand-row">
             <img src="icons/studiocalculator-192-v1.png" alt="" />
-            <p class="print-brand">Studiocalculator · v0.7.0</p>
+            <p class="print-brand">Studiocalculator · v0.8.0</p>
           </div>
           <h1 id="printProjectName">Studio Musterstadt</h1>
           <p>Wirtschaftlichkeits- und Finanzierungsübersicht</p>
@@ -826,6 +849,7 @@
           <div><dt>Positiver Cashflow ab</dt><dd id="printPositiveMonth">–</dd></div>
           <div><dt>Liquiditätsbedarf</dt><dd id="printRampNeed">–</dd></div>
           <div><dt>Kumulierter Cashflow</dt><dd id="printProjectionCumulative">–</dd></div>
+          <div><dt>Gesamtkapital zurückverdient</dt><dd id="printCapitalRecoveryMonth">–</dd></div>
         </dl>
 
         <table class="print-table print-cashflow-table">
@@ -852,7 +876,7 @@
     </section>
 
     <footer>
-      <p>Studiocalculator v0.7.0 · Installierbar und lokal nutzbar</p>
+      <p>Studiocalculator v0.8.0 · Installierbar und lokal nutzbar</p>
     </footer>
 
     <aside class="update-notice" id="updateNotice" aria-live="polite" hidden>

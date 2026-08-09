@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.7.0
+v0.8.0
 
 ## Ziel
 
@@ -16,7 +16,7 @@ zu müssen.
 
 ## Ziel der aktuellen Version
 
-Version 0.7.0 bleibt technisch bewusst einfach:
+Version 0.8.0 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
@@ -163,6 +163,14 @@ reguläre Tilgungsphase nach einer gegebenenfalls tilgungsfreien Anlaufzeit.
 - kumulierter Cashflow über den gewählten Betrachtungszeitraum
 - Liquiditätsbedarf im Hochlauf als höchster kumulierter negativer Cashflow
 - erster Monat mit nicht negativem Cashflow nach Finanzierung
+- erster Monat, in dem der kumulierte Cashflow nach Finanzierung innerhalb des
+  Betrachtungszeitraums mindestens den gesamten Kapitalbedarf erreicht
+
+Der erste positive Monats-Cashflow und die Rückzahlung des Gesamtkapitals sind
+getrennte Zeitpunkte. Die monatsgenaue Kapitalrückzahlung berücksichtigt den
+Mitgliederhochlauf, die mietfreie Anlaufzeit und den Schuldendienst. Sie wird in
+den aufklappbaren weiteren Details erklärt. Die vereinfachte rechnerische
+Amortisation verwendet dagegen das konstante Betriebsergebnis vor Finanzierung.
 
 ### PDF-Bericht
 
@@ -224,6 +232,7 @@ Die Anwendung zeigt:
 - Ergebnismarge und Ergebnis je m²
 - Kapitalbedarf inklusive Reserve
 - rechnerische Amortisationsdauer
+- monatsgenauer Kapitalrückfluss im Cashflow-Hochlauf
 - Finanzierungssaldo und Eigenkapitalquote
 - monatliche Darlehensrate und gesamter Schuldendienst
 - Cashflow nach Finanzierung, DSCR und vereinfachte Eigenkapitalrendite
@@ -261,7 +270,7 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.7.0 berücksichtigt insbesondere noch nicht:
+Version 0.8.0 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen

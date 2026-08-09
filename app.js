@@ -33,7 +33,7 @@ const defaults = {
   scenarioVariance: 15,
 };
 
-const APP_VERSION = "0.7.0";
+const APP_VERSION = "0.8.0";
 const PROJECT_FILE_FORMAT = "studiocalculator-project";
 const LEGACY_PROJECT_FILE_FORMATS = new Set(["studio-calculator-project"]);
 const PROJECT_SCHEMA_VERSION = 1;
@@ -540,6 +540,12 @@ function formatMonths(months) {
   return `${decimal.format(months / 12)} Jahre`;
 }
 
+function formatCapitalRecovery(month, projectionMonths, capitalRequirement) {
+  if (capitalRequirement <= 0) return "Kein Kapitalbedarf";
+  if (month === null) return `Nicht im Zeitraum (${projectionMonths} Mon.)`;
+  return `Monat ${month}`;
+}
+
 function annuityPayment(principal, monthlyInterest, months) {
   if (principal <= 0) return 0;
   if (!Number.isFinite(months) || months <= 0) return 0;
@@ -582,11 +588,13 @@ function renderProjection({
   graceMonths,
   monthlyRent,
   rentFreeMonths,
+  capitalRequirement,
 }) {
   const months = [];
   let cumulativeCashflow = 0;
   let lowestCumulativeCashflow = 0;
   let firstPositiveMonth = null;
+  let capitalRecoveryMonth = capitalRequirement <= 0 ? 0 : null;
 
   for (let month = 1; month <= projectionMonths; month += 1) {
     const progress =
@@ -607,6 +615,12 @@ function renderProjection({
     cumulativeCashflow += scenario.cashflow;
     lowestCumulativeCashflow = Math.min(lowestCumulativeCashflow, cumulativeCashflow);
     if (firstPositiveMonth === null && scenario.cashflow >= 0) firstPositiveMonth = month;
+    if (
+      capitalRecoveryMonth === null &&
+      cumulativeCashflow >= capitalRequirement
+    ) {
+      capitalRecoveryMonth = month;
+    }
     months.push({ month, cumulativeCashflow, ...scenario });
   }
 
@@ -617,6 +631,10 @@ function renderProjection({
   );
   setText("rampLiquidityNeed", euro.format(Math.abs(lowestCumulativeCashflow)));
   setText("projectionCumulative", euro.format(cumulativeCashflow));
+  setText(
+    "capitalRecoveryMonth",
+    formatCapitalRecovery(capitalRecoveryMonth, projectionMonths, capitalRequirement),
+  );
   setText(
     "projectionEndMembers",
     Math.round(finalMonth.memberCount).toLocaleString("de-DE"),
@@ -669,6 +687,7 @@ function renderProjection({
     cumulativeCashflow,
     liquidityNeed: Math.abs(lowestCumulativeCashflow),
     firstPositiveMonth,
+    capitalRecoveryMonth,
     endMembers: finalMonth.memberCount,
   };
 }
@@ -808,6 +827,7 @@ function calculate() {
     graceMonths,
     monthlyRent: rent,
     rentFreeMonths,
+    capitalRequirement,
   });
 
   const projectName = document.querySelector("#projectName").value.trim();
@@ -1102,6 +1122,14 @@ function preparePrintReport() {
   );
   setText("printRampNeed", euro.format(data.projection.liquidityNeed));
   setText("printProjectionCumulative", euro.format(data.projection.cumulativeCashflow));
+  setText(
+    "printCapitalRecoveryMonth",
+    formatCapitalRecovery(
+      data.projection.capitalRecoveryMonth,
+      data.projectionMonths,
+      data.capitalRequirement,
+    ),
+  );
 
   document.querySelector("#printCashflowRows").replaceChildren(
     ...data.projection.months.map((month) =>
