@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.8.0
+v0.8.1
 
 ## Ziel
 
@@ -16,7 +16,7 @@ zu müssen.
 
 ## Ziel der aktuellen Version
 
-Version 0.8.0 bleibt technisch bewusst einfach:
+Version 0.8.1 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
@@ -121,6 +121,13 @@ Abschreibungen, Ertragsteuern und Sondereffekten.
 Die mietfreie Anlaufzeit verändert das nachhaltige monatliche Betriebsergebnis
 nicht. Im Cashflow-Hochlauf entfällt die Kaltmiete in den eingestellten ersten
 Monaten; alle übrigen Betriebskosten bleiben bestehen.
+
+Die frei gewählte Liquiditätsreserve wird aus den vollständigen laufenden
+Monatskosten berechnet und durch mietfreie Monate nicht reduziert. Sie ist ein
+Sicherheitspuffer und Bestandteil des Kapitalbedarfs. Der prognostizierte
+Liquiditätsbedarf im Hochlauf ist dagegen das höchste kumulierte Cashflow-Defizit
+und wird nicht zusätzlich zum Kapitalbedarf addiert. App und PDF weisen beide
+Werte und die Reserveformel getrennt aus.
 
 ### Finanzierung
 
@@ -270,7 +277,7 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.8.0 berücksichtigt insbesondere noch nicht:
+Version 0.8.1 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen

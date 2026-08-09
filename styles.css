@@ -897,6 +897,7 @@ input {
 
 .finance-details dl div {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   padding: 7px 0;
@@ -908,7 +909,13 @@ input {
   margin: 0;
 }
 
+.finance-details dt {
+  min-width: 0;
+}
+
 .finance-details dd {
+  max-width: 60%;
+  overflow-wrap: anywhere;
   color: var(--ink);
   font-weight: 750;
   text-align: right;
@@ -1681,6 +1688,18 @@ footer {
   .print-data-list dd {
     font-weight: 700;
     text-align: right;
+  }
+
+  .print-data-list dd strong,
+  .print-data-list dd span {
+    display: block;
+  }
+
+  .print-data-list dd span {
+    margin-top: 0.7mm;
+    color: #68736f;
+    font-size: 6.2pt;
+    font-weight: 500;
   }
 
   .print-table {

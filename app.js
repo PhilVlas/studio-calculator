@@ -33,7 +33,7 @@ const defaults = {
   scenarioVariance: 15,
 };
 
-const APP_VERSION = "0.8.0";
+const APP_VERSION = "0.8.1";
 const PROJECT_FILE_FORMAT = "studiocalculator-project";
 const LEGACY_PROJECT_FILE_FORMATS = new Set(["studio-calculator-project"]);
 const PROJECT_SCHEMA_VERSION = 1;
@@ -546,6 +546,13 @@ function formatCapitalRecovery(month, projectionMonths, capitalRequirement) {
   return `Monat ${month}`;
 }
 
+function formatReserveFormula(reserveMonths, monthlyCosts, liquidityReserve) {
+  const monthCount = reserveMonths.toLocaleString("de-DE", {
+    maximumFractionDigits: 1,
+  });
+  return `${monthCount} Mon. × ${euro.format(monthlyCosts)} = ${euro.format(liquidityReserve)}`;
+}
+
 function annuityPayment(principal, monthlyInterest, months) {
   if (principal <= 0) return 0;
   if (!Number.isFinite(months) || months <= 0) return 0;
@@ -829,6 +836,13 @@ function calculate() {
     rentFreeMonths,
     capitalRequirement,
   });
+  const reserveFormula = formatReserveFormula(
+    reserveMonths,
+    monthlyCosts,
+    liquidityReserve,
+  );
+  setText("liquidityReserveDetail", reserveFormula);
+  setText("rampLiquidityNeedDetail", euro.format(projection.liquidityNeed));
 
   const projectName = document.querySelector("#projectName").value.trim();
   setText("resultProject", projectName || "Unbenanntes Projekt");
@@ -915,6 +929,7 @@ function calculate() {
     resultPerArea,
     investment,
     liquidityReserve,
+    reserveMonths,
     capitalRequirement,
     roi,
     equity,
@@ -1074,6 +1089,10 @@ function preparePrintReport() {
 
   setText("printInvestment", euro.format(data.investment));
   setText("printReserve", euro.format(data.liquidityReserve));
+  setText(
+    "printReserveFormula",
+    formatReserveFormula(data.reserveMonths, data.monthlyCosts, data.liquidityReserve),
+  );
   setText("printEquity", euro.format(data.equity));
   setText("printLoan", euro.format(data.bankLoan));
   setText("printGrants", euro.format(data.grants));
