@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.6.1
+v0.7.0
 
 ## Ziel
 
@@ -16,7 +16,7 @@ zu müssen.
 
 ## Ziel der aktuellen Version
 
-Version 0.5.2 bleibt technisch bewusst einfach:
+Version 0.7.0 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
@@ -38,6 +38,7 @@ Version 0.5.2 bleibt technisch bewusst einfach:
 - Kaltmiete je m²
 - alternativ direkt eingebbare monatliche Kaltmiete
 - monatliche Nebenkosten
+- mietfreie Anlaufzeit in Monaten
 
 ### Mitglieder
 
@@ -115,6 +116,11 @@ Abschreibungen, Ertragsteuern und Sondereffekten.
 - Liquiditätsreserve: monatliche Betriebskosten × Reservemonate
 - Kapitalbedarf: Einmalinvestitionen + Liquiditätsreserve
 - rechnerische Amortisation: Kapitalbedarf ÷ positives Monatsbetriebsergebnis
+- Projekt-ROI: Jahresbetriebsergebnis ÷ Kapitalbedarf
+
+Die mietfreie Anlaufzeit verändert das nachhaltige monatliche Betriebsergebnis
+nicht. Im Cashflow-Hochlauf entfällt die Kaltmiete in den eingestellten ersten
+Monaten; alle übrigen Betriebskosten bleiben bestehen.
 
 ### Finanzierung
 
@@ -153,6 +159,7 @@ reguläre Tilgungsphase nach einer gegebenenfalls tilgungsfreien Anlaufzeit.
 - monatliches Betriebsergebnis und Cashflow nach Finanzierung
 - während einer tilgungsfreien Anlaufzeit wird der reduzierte Schuldendienst
   aus Zinsen und Leasingrate verwendet
+- während der mietfreien Anlaufzeit wird keine Kaltmiete angesetzt
 - kumulierter Cashflow über den gewählten Betrachtungszeitraum
 - Liquiditätsbedarf im Hochlauf als höchster kumulierter negativer Cashflow
 - erster Monat mit nicht negativem Cashflow nach Finanzierung
@@ -254,7 +261,7 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.6.1 berücksichtigt insbesondere noch nicht:
+Version 0.7.0 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen

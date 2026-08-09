@@ -17,8 +17,8 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icons/studiocalculator-192-v1.png" type="image/png" />
     <link rel="apple-touch-icon" href="icons/studiocalculator-apple-180-v1.png" />
-    <link rel="stylesheet" href="styles.css?v=0.6.1" />
-    <script src="app.js?v=0.6.1" defer></script>
+    <link rel="stylesheet" href="styles.css?v=0.7.0" />
+    <script src="app.js?v=0.7.0" defer></script>
   </head>
   <body>
     <header class="hero">
@@ -32,7 +32,7 @@
               width="48"
               height="48"
             />
-            <p class="eyebrow">Studiocalculator · v0.6.1</p>
+            <p class="eyebrow">Studiocalculator · v0.7.0</p>
           </div>
           <h1>Trägt sich der Standort?</h1>
           <p class="hero__intro">
@@ -162,6 +162,13 @@
                 <span class="input-wrap">
                   <input id="utilities" name="utilities" type="number" min="0" step="100" value="900" />
                   <span class="unit">€</span>
+                </span>
+              </label>
+              <label class="field">
+                <span>Mietfreie Anlaufzeit</span>
+                <span class="input-wrap">
+                  <input id="rentFreeMonths" name="rentFreeMonths" type="number" min="0" max="60" step="1" value="0" />
+                  <span class="unit">Mon.</span>
                 </span>
               </label>
             </div>
@@ -469,7 +476,12 @@
               <strong id="capitalRequirement">–</strong>
               <span>inkl. Reserve</span>
             </article>
-            <article class="kpi kpi--wide">
+            <article class="kpi">
+              <p>Return on Investment (ROI)</p>
+              <strong id="roi">–</strong>
+              <span>Jahresergebnis ÷ Kapitalbedarf</span>
+            </article>
+            <article class="kpi">
               <p>Rechnerische Amortisation</p>
               <strong id="payback">–</strong>
               <span>bei konstantem Ergebnis</span>
@@ -550,7 +562,9 @@
             Der Kapitalbedarf umfasst Einmalinvestitionen plus laufende Kosten
             für die gewählten Reservemonate. Der Cashflow nach Finanzierung
             zieht die berechnete Darlehensrate und die Leasingrate vom
-            Betriebsergebnis ab.
+            Betriebsergebnis ab. Eine mietfreie Anlaufzeit reduziert die Kosten
+            ausschließlich im Cashflow-Hochlauf. Der ROI setzt das annualisierte
+            Betriebsergebnis vor Finanzierung ins Verhältnis zum Kapitalbedarf.
           </p>
           <p>
             Die Kalkulation ist eine überschlägige Entscheidungshilfe und keine
@@ -705,7 +719,7 @@
         <div>
           <div class="print-brand-row">
             <img src="icons/studiocalculator-192-v1.png" alt="" />
-            <p class="print-brand">Studiocalculator · v0.6.1</p>
+            <p class="print-brand">Studiocalculator · v0.7.0</p>
           </div>
           <h1 id="printProjectName">Studio Musterstadt</h1>
           <p>Wirtschaftlichkeits- und Finanzierungsübersicht</p>
@@ -742,6 +756,7 @@
             <div><dt>Fläche</dt><dd id="printArea">–</dd></div>
             <div><dt>Kaltmiete je m²</dt><dd id="printRentPerArea">–</dd></div>
             <div><dt>Kaltmiete / Monat</dt><dd id="printRent">–</dd></div>
+            <div><dt>Mietfreie Anlaufzeit</dt><dd id="printRentFreeMonths">–</dd></div>
             <div><dt>Mitglieder</dt><dd id="printMembers">–</dd></div>
             <div><dt>Monatsbeitrag brutto</dt><dd id="printGrossFee">–</dd></div>
             <div><dt>Nettoumsatz / Monat</dt><dd id="printNetRevenue">–</dd></div>
@@ -761,6 +776,7 @@
             <div><dt>Ergebnismarge</dt><dd id="printMargin">–</dd></div>
             <div><dt>Operatives Ergebnis je m²</dt><dd id="printResultPerArea">–</dd></div>
             <div><dt>Jahresergebnis</dt><dd id="printAnnualResult">–</dd></div>
+            <div><dt>Projekt-ROI</dt><dd id="printROI">–</dd></div>
           </dl>
         </section>
       </div>
@@ -836,7 +852,7 @@
     </section>
 
     <footer>
-      <p>Studiocalculator v0.6.1 · Installierbar und lokal nutzbar</p>
+      <p>Studiocalculator v0.7.0 · Installierbar und lokal nutzbar</p>
     </footer>
 
     <aside class="update-notice" id="updateNotice" aria-live="polite" hidden>

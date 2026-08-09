@@ -1,9 +1,9 @@
-const CACHE_NAME = "studiocalculator-v0.6.1";
+const CACHE_NAME = "studiocalculator-v0.7.0";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=0.6.1",
-  "./app.js?v=0.6.1",
+  "./styles.css?v=0.7.0",
+  "./app.js?v=0.7.0",
   "./manifest.webmanifest",
   "./icons/studiocalculator-192-v1.png",
   "./icons/studiocalculator-512-v1.png",

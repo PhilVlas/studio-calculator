@@ -750,10 +750,8 @@ input {
   border-right: 1px solid var(--line);
 }
 
-.kpi--wide {
-  grid-column: 1 / -1;
+.kpi:nth-last-child(-n + 2) {
   border-bottom: 0;
-  border-right: 0 !important;
 }
 
 .kpi p,

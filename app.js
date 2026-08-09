@@ -4,6 +4,7 @@ const defaults = {
   rentPerArea: 6,
   rent: 3000,
   utilities: 900,
+  rentFreeMonths: 0,
   members: 750,
   grossFee: 39.9,
   vatRate: 19,
@@ -32,7 +33,7 @@ const defaults = {
   scenarioVariance: 15,
 };
 
-const APP_VERSION = "0.6.1";
+const APP_VERSION = "0.7.0";
 const PROJECT_FILE_FORMAT = "studiocalculator-project";
 const LEGACY_PROJECT_FILE_FORMATS = new Set(["studio-calculator-project"]);
 const PROJECT_SCHEMA_VERSION = 1;
@@ -111,8 +112,13 @@ function normalizeProjectData(rawData = {}) {
       return;
     }
 
+    const hasStoredValue = Object.prototype.hasOwnProperty.call(rawData, id);
     const parsed = Number.parseFloat(rawData[id]);
-    let nextValue = Number.isFinite(parsed) ? parsed : defaultValue;
+    let nextValue = Number.isFinite(parsed)
+      ? parsed
+      : hasStoredValue
+        ? 0
+        : defaultValue;
     const minimum = Number.parseFloat(input.min);
     const maximum = Number.parseFloat(input.max);
     if (Number.isFinite(minimum)) nextValue = Math.max(minimum, nextValue);
@@ -536,6 +542,7 @@ function formatMonths(months) {
 
 function annuityPayment(principal, monthlyInterest, months) {
   if (principal <= 0) return 0;
+  if (!Number.isFinite(months) || months <= 0) return 0;
   if (monthlyInterest <= 0) return principal / months;
   return principal * (monthlyInterest / (1 - (1 + monthlyInterest) ** -months));
 }
@@ -573,6 +580,8 @@ function renderProjection({
   regularDebtService,
   graceDebtService,
   graceMonths,
+  monthlyRent,
+  rentFreeMonths,
 }) {
   const months = [];
   let cumulativeCashflow = 0;
@@ -584,11 +593,15 @@ function renderProjection({
       rampMonths <= 1 ? 1 : Math.min((month - 1) / (rampMonths - 1), 1);
     const memberCount = startMembers + (targetMembers - startMembers) * progress;
     const debtService = month <= graceMonths ? graceDebtService : regularDebtService;
+    const effectiveMonthlyCosts =
+      month <= rentFreeMonths
+        ? Math.max(0, monthlyCosts - monthlyRent)
+        : monthlyCosts;
     const scenario = operatingScenario(
       memberCount,
       grossFee,
       vatRate,
-      monthlyCosts,
+      effectiveMonthlyCosts,
       debtService,
     );
     cumulativeCashflow += scenario.cashflow;
@@ -678,6 +691,7 @@ function calculate() {
   const area = value("area");
   const rent = value("rent");
   const utilities = value("utilities");
+  const rentFreeMonths = Math.min(60, Math.round(value("rentFreeMonths")));
   const members = value("members");
   const grossFee = value("grossFee");
   const vatRate = value("vatRate");
@@ -711,6 +725,7 @@ function calculate() {
   lastCapitalRequirement = capitalRequirement;
   const paybackMonths =
     monthlyResult > 0 ? capitalRequirement / monthlyResult : Number.POSITIVE_INFINITY;
+  const roi = capitalRequirement > 0 ? (annualResult / capitalRequirement) * 100 : null;
 
   const equity = value("equity");
   const bankLoan = value("bankLoan");
@@ -791,6 +806,8 @@ function calculate() {
     regularDebtService: monthlyDebtService,
     graceDebtService,
     graceMonths,
+    monthlyRent: rent,
+    rentFreeMonths,
   });
 
   const projectName = document.querySelector("#projectName").value.trim();
@@ -807,6 +824,7 @@ function calculate() {
   );
   setText("capitalRequirement", euro.format(capitalRequirement));
   setText("payback", formatMonths(paybackMonths));
+  setText("roi", roi === null ? "Nicht berechenbar" : `${decimal.format(roi)} % p. a.`);
   setText("cashflowAfterFinancing", euro.format(cashflowAfterFinancing));
   setText("equityRatio", equityRatio === null ? "–" : `${decimal.format(equityRatio)} %`);
   setText("monthlyLoanPayment", `${euro.format(monthlyLoanPayment)} / Mon.`);
@@ -860,6 +878,7 @@ function calculate() {
     rentPerArea: value("rentPerArea"),
     rent,
     utilities,
+    rentFreeMonths,
     members,
     grossFee,
     vatRate,
@@ -877,6 +896,7 @@ function calculate() {
     investment,
     liquidityReserve,
     capitalRequirement,
+    roi,
     equity,
     bankLoan,
     grants,
@@ -930,6 +950,13 @@ function calculate() {
   insightItems.push(
     `Im Kapitalbedarf sind ${euro.format(investment)} Investitionen und ${euro.format(liquidityReserve)} Reserve enthalten.`,
   );
+
+  if (rentFreeMonths > 0) {
+    const appliedRentFreeMonths = Math.min(rentFreeMonths, projectionMonths);
+    insightItems.push(
+      `Die mietfreie Anlaufzeit verbessert den Hochlauf in den ersten ${rentFreeMonths.toLocaleString("de-DE")} Monaten; im Betrachtungszeitraum entfallen dadurch ${euro.format(rent * appliedRentFreeMonths)} Kaltmiete.`,
+    );
+  }
 
   if (financingGap > 0.5) {
     insightItems.push(
@@ -997,6 +1024,10 @@ function preparePrintReport() {
   setText("printArea", `${decimal.format(data.area)} m²`);
   setText("printRentPerArea", `${euroDetailed.format(data.rentPerArea)} / m²`);
   setText("printRent", `${euro.format(data.rent)} / Monat`);
+  setText(
+    "printRentFreeMonths",
+    `${data.rentFreeMonths.toLocaleString("de-DE")} Monate`,
+  );
   setText("printMembers", data.members.toLocaleString("de-DE"));
   setText("printGrossFee", euroDetailed.format(data.grossFee));
   setText("printNetRevenue", euro.format(data.netRevenue));
@@ -1019,6 +1050,7 @@ function preparePrintReport() {
     data.resultPerArea === null ? "–" : `${euroDetailed.format(data.resultPerArea)} / m²`,
   );
   setText("printAnnualResult", euro.format(data.annualResult));
+  setText("printROI", data.roi === null ? "Nicht berechenbar" : `${decimal.format(data.roi)} % p. a.`);
 
   setText("printInvestment", euro.format(data.investment));
   setText("printReserve", euro.format(data.liquidityReserve));
@@ -1027,8 +1059,14 @@ function preparePrintReport() {
   setText("printGrants", euro.format(data.grants));
   setText("printLeaseFinancing", euro.format(data.leaseFinancing));
   setText("printFundingBalance", fundingBalance);
-  setText("printInterest", `${decimal.format(data.loanInterest)} % p. a.`);
-  setText("printTerm", `${decimal.format(data.loanTermYears)} Jahre`);
+  setText(
+    "printInterest",
+    data.bankLoan > 0 ? `${decimal.format(data.loanInterest)} % p. a.` : "Nicht anwendbar",
+  );
+  setText(
+    "printTerm",
+    data.bankLoan > 0 ? `${decimal.format(data.loanTermYears)} Jahre` : "Nicht anwendbar",
+  );
   setText("printDebtService", `${euro.format(data.monthlyDebtService)} / Monat`);
 
   const variance = decimal.format(data.scenarioVariance * 100);
