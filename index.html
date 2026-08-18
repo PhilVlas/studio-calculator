@@ -17,8 +17,8 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icons/studiocalculator-192-v1.png" type="image/png" />
     <link rel="apple-touch-icon" href="icons/studiocalculator-apple-180-v1.png" />
-    <link rel="stylesheet" href="styles.css?v=0.8.1" />
-    <script src="app.js?v=0.8.1" defer></script>
+    <link rel="stylesheet" href="styles.css?v=0.9.0" />
+    <script src="app.js?v=0.9.0" defer></script>
   </head>
   <body>
     <header class="hero">
@@ -32,7 +32,7 @@
               width="48"
               height="48"
             />
-            <p class="eyebrow">Studiocalculator · v0.8.1</p>
+            <p class="eyebrow">Studiocalculator · v0.9.0</p>
           </div>
           <h1>Trägt sich der Standort?</h1>
           <p class="hero__intro">
@@ -304,13 +304,14 @@
           <fieldset class="finance-fieldset">
             <legend>Finanzierung</legend>
             <p class="fieldset-intro">
-              Stellen Sie dem Kapitalbedarf die Finanzierung gegenüber. Das
-              Betriebsergebnis bleibt dabei bewusst separat sichtbar.
+              Eigenmittel, Bank, Leasing und private Investoren werden getrennt
+              gerechnet. Laufzeiten und Fälligkeiten beziehen sich auf den
+              Finanzierungsbeginn.
             </p>
 
             <div class="finance-input-group">
               <div class="subsection-heading">
-                <h3>Kapitalstruktur</h3>
+                <h3>Eigenmittel &amp; zeitlicher Bezug</h3>
                 <span id="fundingInputSummary">Kapitalbedarf vollständig gedeckt</span>
               </div>
               <div class="field-grid">
@@ -322,13 +323,6 @@
                   </span>
                 </label>
                 <label class="field">
-                  <span>Bankdarlehen</span>
-                  <span class="input-wrap">
-                    <input id="bankLoan" name="bankLoan" type="number" min="0" step="1000" value="200000" />
-                    <span class="unit">€</span>
-                  </span>
-                </label>
-                <label class="field">
                   <span>Fördermittel / Zuschüsse</span>
                   <span class="input-wrap">
                     <input id="grants" name="grants" type="number" min="0" step="1000" value="0" />
@@ -336,26 +330,29 @@
                   </span>
                 </label>
                 <label class="field">
-                  <span>Leasingfinanzierter Anteil</span>
+                  <span>Finanzierungsbeginn</span>
                   <span class="input-wrap">
-                    <input id="leaseFinancing" name="leaseFinancing" type="number" min="0" step="1000" value="0" />
-                    <span class="unit">€</span>
+                    <input id="financingStartDate" name="financingStartDate" type="date" />
                   </span>
                 </label>
               </div>
-              <button class="secondary-button" id="balanceFinancing" type="button">
-                Finanzierungslücke mit Darlehen ausgleichen
-              </button>
             </div>
 
             <div class="finance-input-group">
               <div class="subsection-heading">
-                <h3>Konditionen</h3>
-                <span>vereinfachte Annuitätenrechnung</span>
+                <h3>Bankfinanzierung</h3>
+                <span>Annuität mit optional tilgungsfreier Anlaufzeit</span>
               </div>
               <div class="field-grid">
                 <label class="field">
-                  <span>Sollzins pro Jahr</span>
+                  <span>Bankdarlehen</span>
+                  <span class="input-wrap">
+                    <input id="bankLoan" name="bankLoan" type="number" min="0" step="1000" value="200000" />
+                    <span class="unit">€</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Bank-Sollzins pro Jahr</span>
                   <span class="input-wrap">
                     <input id="loanInterest" name="loanInterest" type="number" min="0" step="0.1" value="5.5" />
                     <span class="unit">%</span>
@@ -375,6 +372,52 @@
                     <span class="unit">Mon.</span>
                   </span>
                 </label>
+              </div>
+              <button class="secondary-button" id="balanceFinancing" type="button">
+                Finanzierungslücke mit Bankdarlehen ausgleichen
+              </button>
+            </div>
+
+            <div class="finance-input-group">
+              <div class="subsection-heading">
+                <h3>Leasing</h3>
+                <span>Monats- und Abschlussrate beeinflussen sich gegenseitig</span>
+              </div>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Leasingfinanzierter Anteil</span>
+                  <span class="input-wrap">
+                    <input id="leaseFinancing" name="leaseFinancing" type="number" min="0" step="1000" value="0" />
+                    <span class="unit">€</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Leasingzins pro Jahr</span>
+                  <span class="input-wrap">
+                    <input id="leaseInterest" name="leaseInterest" type="number" min="0" step="0.1" value="5.5" />
+                    <span class="unit">%</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Leasinglaufzeit</span>
+                  <span class="input-wrap">
+                    <input id="leaseTermMonths" name="leaseTermMonths" type="number" min="1" max="600" step="1" value="60" />
+                    <span class="unit">Mon.</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Fälligkeit der Abschlussrate</span>
+                  <span class="input-wrap">
+                    <input id="leaseDueDate" name="leaseDueDate" type="date" />
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Abschlussrate</span>
+                  <span class="input-wrap">
+                    <input id="leaseFinalPayment" name="leaseFinalPayment" type="number" min="0" step="500" value="0" />
+                    <span class="unit">€</span>
+                  </span>
+                </label>
                 <label class="field">
                   <span>Leasingrate / Monat</span>
                   <span class="input-wrap">
@@ -383,6 +426,63 @@
                   </span>
                 </label>
               </div>
+              <label class="check-field">
+                <input id="leaseFinalPaymentAffectsCashflow" name="leaseFinalPaymentAffectsCashflow" type="checkbox" checked />
+                <span>Abschlussrate im Fälligkeitsmonat vom Cashflow abziehen</span>
+              </label>
+              <p class="finance-input-note">
+                Mit Haken wird die Abschlussrate vollständig im Fälligkeitsmonat
+                abgezogen. Ohne Haken wird sie gleichmäßig über die Laufzeit als
+                monatliche Rücklage im Cashflow berücksichtigt.
+              </p>
+            </div>
+
+            <div class="finance-input-group">
+              <div class="subsection-heading">
+                <h3>Private Investoren</h3>
+                <span>monatlicher Kapitalanteil plus Zins auf das offene Kapital</span>
+              </div>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Investorenkapital</span>
+                  <span class="input-wrap">
+                    <input id="investorCapital" name="investorCapital" type="number" min="0" step="1000" value="0" />
+                    <span class="unit">€</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Investoren-Zins pro Jahr</span>
+                  <span class="input-wrap">
+                    <input id="investorInterest" name="investorInterest" type="number" min="0" step="0.1" value="8" />
+                    <span class="unit">%</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Laufzeit</span>
+                  <span class="input-wrap">
+                    <input id="investorTermMonths" name="investorTermMonths" type="number" min="1" max="600" step="1" value="60" />
+                    <span class="unit">Mon.</span>
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Fälligkeit des Restkapitals</span>
+                  <span class="input-wrap">
+                    <input id="investorDueDate" name="investorDueDate" type="date" />
+                  </span>
+                </label>
+                <label class="field">
+                  <span>Monatliche Kapitalrückzahlung</span>
+                  <span class="input-wrap">
+                    <input id="investorMonthlyPrincipalPercent" name="investorMonthlyPrincipalPercent" type="number" min="0" max="100" step="0.1" value="1" />
+                    <span class="unit">% vom Invest</span>
+                  </span>
+                </label>
+              </div>
+              <p class="finance-input-note">
+                Der Zins wird monatlich auf das noch offene Investorenkapital
+                berechnet. Nicht zurückgezahltes Kapital wird bei Fälligkeit vollständig
+                im Cashflow berücksichtigt.
+              </p>
             </div>
           </fieldset>
 
@@ -523,10 +623,10 @@
             </p>
             <p>
               Diese Hochlauf-Betrachtung berücksichtigt die Mitgliederentwicklung,
-              die mietfreie Anlaufzeit sowie Kredit- und Leasingraten innerhalb des
-              gewählten Betrachtungszeitraums. Die oben angezeigte rechnerische
-              Amortisation bleibt eine vereinfachte Vergleichszahl bei konstantem
-              Betriebsergebnis vor Finanzierung.
+              die mietfreie Anlaufzeit sowie Bank-, Leasing- und Investorenzahlungen
+              einschließlich berücksichtigter Schlusszahlungen. Die oben angezeigte
+              rechnerische Amortisation bleibt eine vereinfachte Vergleichszahl bei
+              konstantem Betriebsergebnis vor Finanzierung.
             </p>
           </details>
         </section>
@@ -541,7 +641,7 @@
           </div>
 
           <div class="cashflow-result" id="cashflowResult" data-state="positive">
-            <span>Monatlicher Cashflow nach Finanzierung</span>
+            <span>Regelmäßiger Monats-Cashflow nach Finanzierung</span>
             <strong id="cashflowAfterFinancing">–</strong>
           </div>
 
@@ -555,11 +655,19 @@
               <strong id="equityRatio">–</strong>
             </article>
             <article>
-              <span>Darlehensrate</span>
+              <span>Bankrate</span>
               <strong id="monthlyLoanPayment">–</strong>
             </article>
             <article>
-              <span>Gesamter Schuldendienst</span>
+              <span>Leasingrate</span>
+              <strong id="monthlyLeasePaymentResult">–</strong>
+            </article>
+            <article>
+              <span>Investorenrate zu Beginn</span>
+              <strong id="investorFirstPayment">–</strong>
+            </article>
+            <article>
+              <span>Regelmäßige Finanzierungsbelastung</span>
               <strong id="monthlyDebtService">–</strong>
             </article>
             <article>
@@ -574,6 +682,7 @@
 
           <details class="finance-details">
             <summary>Weitere Finanzierungsdetails</summary>
+            <h3>Bankfinanzierung</h3>
             <dl>
               <div>
                 <dt>Zinszahlung während tilgungsfreier Zeit</dt>
@@ -583,6 +692,43 @@
                 <dt>Geschätzte Gesamtzinsen</dt>
                 <dd id="totalInterest">–</dd>
               </div>
+            </dl>
+            <h3>Leasing</h3>
+            <dl>
+              <div>
+                <dt>Abschlussrate</dt>
+                <dd id="leaseFinalPaymentResult">–</dd>
+              </div>
+              <div>
+                <dt>Fälligkeit</dt>
+                <dd id="leaseDueDateResult">–</dd>
+              </div>
+              <div>
+                <dt>Geschätzte Leasingzinsen</dt>
+                <dd id="leaseTotalInterest">–</dd>
+              </div>
+              <div>
+                <dt>Angesetzte monatliche Rücklage für Abschlussrate</dt>
+                <dd id="suggestedLeaseReserve">–</dd>
+              </div>
+            </dl>
+            <h3>Private Investoren</h3>
+            <dl>
+              <div>
+                <dt>Restkapital bei Fälligkeit</dt>
+                <dd id="investorFinalPayment">–</dd>
+              </div>
+              <div>
+                <dt>Fälligkeit</dt>
+                <dd id="investorDueDateResult">–</dd>
+              </div>
+              <div>
+                <dt>Geschätzte Gesamtzinsen</dt>
+                <dd id="investorTotalInterest">–</dd>
+              </div>
+            </dl>
+            <h3>Eigenkapital</h3>
+            <dl>
               <div>
                 <dt>Rechnerische EK-Amortisation</dt>
                 <dd id="equityPayback">–</dd>
@@ -603,10 +749,15 @@
             Das Betriebsergebnis ist Nettoumsatz minus aller monatlichen Kosten.
             Der Kapitalbedarf umfasst Einmalinvestitionen plus laufende Kosten
             für die gewählten Reservemonate. Der Cashflow nach Finanzierung
-            zieht die berechnete Darlehensrate und die Leasingrate vom
-            Betriebsergebnis ab. Eine mietfreie Anlaufzeit reduziert die Kosten
-            ausschließlich im Cashflow-Hochlauf. Der ROI setzt das annualisierte
-            Betriebsergebnis vor Finanzierung ins Verhältnis zum Kapitalbedarf.
+            zieht Bankrate, Leasingrate und Investorenzahlungen vom
+            Betriebsergebnis ab. Leasing-Abschlussraten werden bei gesetztem
+            Haken im Fälligkeitsmonat abgezogen; andernfalls wird monatlich eine
+            gleichmäßige Rücklage angesetzt. Diese Rücklage ist in der regelmäßigen
+            Finanzierungsbelastung und im DSCR enthalten. Fälliges Restkapital
+            privater Investoren wird immer berücksichtigt. Eine mietfreie Anlaufzeit
+            reduziert die Kosten ausschließlich im Cashflow-Hochlauf. Der ROI
+            setzt das annualisierte Betriebsergebnis vor Finanzierung ins
+            Verhältnis zum Kapitalbedarf.
           </p>
           <p>
             Die Kalkulation ist eine überschlägige Entscheidungshilfe und keine
@@ -745,6 +896,7 @@
                   <th>Monat</th>
                   <th>Mitglieder</th>
                   <th>Betriebsergebnis</th>
+                  <th>Sonderzahlung</th>
                   <th>Cashflow</th>
                   <th>Kumuliert</th>
                 </tr>
@@ -761,7 +913,7 @@
         <div>
           <div class="print-brand-row">
             <img src="icons/studiocalculator-192-v1.png" alt="" />
-            <p class="print-brand">Studiocalculator · v0.8.1</p>
+            <p class="print-brand">Studiocalculator · v0.9.0</p>
           </div>
           <h1 id="printProjectName">Studio Musterstadt</h1>
           <p>Wirtschaftlichkeits- und Finanzierungsübersicht</p>
@@ -824,7 +976,7 @@
       </div>
 
       <section class="print-block">
-        <h2>Investition &amp; Finanzierung</h2>
+        <h2>Investition &amp; Finanzierungsübersicht</h2>
         <div class="print-two-column print-two-column--inside">
           <dl class="print-data-list">
             <div><dt>Einmalinvestitionen</dt><dd id="printInvestment">–</dd></div>
@@ -836,15 +988,62 @@
               </dd>
             </div>
             <div><dt>Eigenkapital</dt><dd id="printEquity">–</dd></div>
-            <div><dt>Bankdarlehen</dt><dd id="printLoan">–</dd></div>
             <div><dt>Fördermittel</dt><dd id="printGrants">–</dd></div>
           </dl>
           <dl class="print-data-list">
-            <div><dt>Leasingfinanzierter Anteil</dt><dd id="printLeaseFinancing">–</dd></div>
+            <div><dt>Finanzierungsbeginn</dt><dd id="printFinancingStartDate">–</dd></div>
+            <div><dt>Bankdarlehen</dt><dd id="printLoan">–</dd></div>
+            <div><dt>Leasing</dt><dd id="printLeaseFinancing">–</dd></div>
+            <div><dt>Private Investoren</dt><dd id="printInvestorCapital">–</dd></div>
             <div><dt>Finanzierungssaldo</dt><dd id="printFundingBalance">–</dd></div>
+            <div><dt>Regelmäßige Finanzierungsbelastung</dt><dd id="printDebtService">–</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <div class="print-two-column">
+        <section class="print-block">
+          <h2>Bankfinanzierung</h2>
+          <dl class="print-data-list">
+            <div><dt>Bankdarlehen</dt><dd id="printBankAmount">–</dd></div>
             <div><dt>Sollzins</dt><dd id="printInterest">–</dd></div>
             <div><dt>Laufzeit</dt><dd id="printTerm">–</dd></div>
-            <div><dt>Schuldendienst / Monat</dt><dd id="printDebtService">–</dd></div>
+            <div><dt>Tilgungsfreie Zeit</dt><dd id="printGraceMonths">–</dd></div>
+            <div><dt>Monatliche Rate</dt><dd id="printMonthlyLoanPayment">–</dd></div>
+            <div><dt>Geschätzte Gesamtzinsen</dt><dd id="printBankTotalInterest">–</dd></div>
+          </dl>
+        </section>
+
+        <section class="print-block">
+          <h2>Leasing</h2>
+          <dl class="print-data-list">
+            <div><dt>Finanzierter Anteil</dt><dd id="printLeaseAmount">–</dd></div>
+            <div><dt>Leasingzins</dt><dd id="printLeaseInterest">–</dd></div>
+            <div><dt>Laufzeit</dt><dd id="printLeaseTerm">–</dd></div>
+            <div><dt>Monatliche Rate</dt><dd id="printLeaseMonthlyPayment">–</dd></div>
+            <div><dt>Abschlussrate</dt><dd id="printLeaseFinalPayment">–</dd></div>
+            <div><dt>Fälligkeit</dt><dd id="printLeaseDueDate">–</dd></div>
+            <div><dt>Im Fälligkeits-Cashflow</dt><dd id="printLeaseFinalCashflow">–</dd></div>
+            <div><dt>Monatliche Rücklage</dt><dd id="printLeaseReserve">–</dd></div>
+            <div><dt>Geschätzte Leasingzinsen</dt><dd id="printLeaseTotalInterest">–</dd></div>
+          </dl>
+        </section>
+      </div>
+
+      <section class="print-block">
+        <h2>Private Investoren</h2>
+        <div class="print-two-column print-two-column--inside">
+          <dl class="print-data-list">
+            <div><dt>Investorenkapital</dt><dd id="printInvestorAmount">–</dd></div>
+            <div><dt>Zins</dt><dd id="printInvestorInterest">–</dd></div>
+            <div><dt>Laufzeit</dt><dd id="printInvestorTerm">–</dd></div>
+            <div><dt>Fälligkeit</dt><dd id="printInvestorDueDate">–</dd></div>
+          </dl>
+          <dl class="print-data-list">
+            <div><dt>Kapitalrückzahlung / Monat</dt><dd id="printInvestorPrincipalPercent">–</dd></div>
+            <div><dt>Rate zu Beginn</dt><dd id="printInvestorFirstPayment">–</dd></div>
+            <div><dt>Restkapital bei Fälligkeit</dt><dd id="printInvestorFinalPayment">–</dd></div>
+            <div><dt>Geschätzte Gesamtzinsen</dt><dd id="printInvestorTotalInterest">–</dd></div>
           </dl>
         </div>
       </section>
@@ -883,6 +1082,7 @@
               <th>Monat</th>
               <th>Mitglieder</th>
               <th>Betriebsergebnis</th>
+              <th>Sonderzahlung</th>
               <th>Cashflow</th>
               <th>Kumuliert</th>
             </tr>
@@ -901,7 +1101,7 @@
     </section>
 
     <footer>
-      <p>Studiocalculator v0.8.1 · Installierbar und lokal nutzbar</p>
+      <p>Studiocalculator v0.9.0 · Installierbar und lokal nutzbar</p>
     </footer>
 
     <aside class="update-notice" id="updateNotice" aria-live="polite" hidden>

@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.8.1
+v0.9.0
 
 ## Ziel
 
@@ -16,7 +16,7 @@ zu müssen.
 
 ## Ziel der aktuellen Version
 
-Version 0.8.1 bleibt technisch bewusst einfach:
+Version 0.9.0 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
@@ -69,13 +69,15 @@ Version 0.8.1 bleibt technisch bewusst einfach:
 ### Finanzierung
 
 - Eigenkapital
-- Bankdarlehen
 - Fördermittel und Zuschüsse
-- leasingfinanzierter Anteil
-- jährlicher Sollzins
-- Darlehenslaufzeit in Jahren
-- tilgungsfreie Anlaufzeit in Monaten
-- monatliche Leasingrate
+- Finanzierungsbeginn als zeitlicher Bezug für Fälligkeiten
+- Bankdarlehen mit jährlichem Sollzins, Laufzeit und tilgungsfreier Anlaufzeit
+- Leasing mit finanziertem Anteil, Leasingzins, Laufzeit, Fälligkeitsdatum,
+  Abschlussrate und monatlicher Leasingrate
+- Auswahl, ob die Leasing-Abschlussrate den Cashflow im Fälligkeitsmonat belastet
+  oder als gleichmäßige monatliche Rücklage im Cashflow berücksichtigt wird
+- privates Investorenkapital mit Zins, Laufzeit, Fälligkeit und frei wählbarer
+  monatlicher Kapitalrückzahlung in Prozent des ursprünglichen Invests
 
 ### Szenarien und Hochlauf
 
@@ -132,23 +134,34 @@ Werte und die Reserveformel getrennt aus.
 ### Finanzierung
 
 - Gesamtfinanzierung: Eigenkapital + Bankdarlehen + Fördermittel +
-  leasingfinanzierter Anteil
+  leasingfinanzierter Anteil + privates Investorenkapital
 - Finanzierungssaldo: Kapitalbedarf − Gesamtfinanzierung
 - Eigenkapitalquote: Eigenkapital ÷ Kapitalbedarf
 - monatliche Darlehensrate: vereinfachte Annuität aus Darlehen, Sollzins und
   verbleibender Tilgungsdauer
 - während der tilgungsfreien Anlaufzeit werden nur die rechnerischen Zinsen
   ausgewiesen
-- Schuldendienst: Darlehensrate + monatliche Leasingrate
-- Cashflow nach Finanzierung: Betriebsergebnis − Schuldendienst
-- DSCR: Betriebsergebnis ÷ Schuldendienst
+- monatliche Leasingrate: Barwertrechnung aus Leasingbetrag, Zins, Laufzeit und
+  Abschlussrate; wird die Monatsrate direkt verändert, wird die rechnerische
+  Abschlussrate angepasst
+- Investorenzahlung: festgelegter monatlicher Kapitalanteil des ursprünglichen
+  Invests plus Zins auf das jeweils offene Investorenkapital
+- bei Fälligkeit wird nicht zurückgezahltes Investorenkapital vollständig fällig
+- regelmäßige Finanzierungsbelastung: Bankrate + Leasingrate + Investorenzahlung
+  zu Beginn + gegebenenfalls angesetzte monatliche Leasing-Rücklage
+- monatsgenaue Finanzierungsbelastung: regelmäßige Zahlungen des jeweiligen Monats
+  plus berücksichtigte Schlusszahlungen
+- Cashflow nach Finanzierung: Betriebsergebnis − Finanzierungsbelastung
+- DSCR: Betriebsergebnis ÷ regelmäßige Finanzierungsbelastung
 - vereinfachte Eigenkapitalrendite: jährlicher Cashflow nach Finanzierung ÷
   Eigenkapital
 - rechnerische Eigenkapital-Amortisation: Eigenkapital ÷ positiver monatlicher
   Cashflow nach Finanzierung
 
-Die Darlehensrate und der Cashflow nach Finanzierung beziehen sich auf die
-reguläre Tilgungsphase nach einer gegebenenfalls tilgungsfreien Anlaufzeit.
+Der regelmäßig ausgewiesene Cashflow nach Finanzierung verwendet Bankrate,
+Leasingrate und die Investorenzahlung zu Beginn. Im monatsgenauen Hochlauf werden
+sinkende Investoren-Zinsen, das Ende der jeweiligen Laufzeiten und fällige
+Schlusszahlungen berücksichtigt.
 
 ### Szenariovergleich
 
@@ -165,7 +178,10 @@ reguläre Tilgungsphase nach einer gegebenenfalls tilgungsfreien Anlaufzeit.
 - linearer Mitgliederaufbau von der Start-Mitgliederzahl bis zum Basisziel
 - monatliches Betriebsergebnis und Cashflow nach Finanzierung
 - während einer tilgungsfreien Anlaufzeit wird der reduzierte Schuldendienst
-  aus Zinsen und Leasingrate verwendet
+  aus Bankzinsen, Leasingrate und Investorenzahlung verwendet
+- Leasing-Abschlussrate im Fälligkeitsmonat bei aktivierter Auswahl; andernfalls
+  gleichmäßige monatliche Rücklage über die Leasinglaufzeit
+- vollständige Rückzahlung des verbleibenden Investorenkapitals bei Fälligkeit
 - während der mietfreien Anlaufzeit wird keine Kaltmiete angesetzt
 - kumulierter Cashflow über den gewählten Betrachtungszeitraum
 - Liquiditätsbedarf im Hochlauf als höchster kumulierter negativer Cashflow
@@ -241,7 +257,7 @@ Die Anwendung zeigt:
 - rechnerische Amortisationsdauer
 - monatsgenauer Kapitalrückfluss im Cashflow-Hochlauf
 - Finanzierungssaldo und Eigenkapitalquote
-- monatliche Darlehensrate und gesamter Schuldendienst
+- getrennte Bank-, Leasing- und Investorenzahlungen sowie gesamter Schuldendienst
 - Cashflow nach Finanzierung, DSCR und vereinfachte Eigenkapitalrendite
 - geschätzte Gesamtzinsen und rechnerische Eigenkapital-Amortisation
 - drei vergleichbare Mitgliederszenarien mit Betriebsergebnis und Cashflow
@@ -277,7 +293,7 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.8.1 berücksichtigt insbesondere noch nicht:
+Version 0.9.0 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen

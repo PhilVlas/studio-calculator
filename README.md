@@ -1,6 +1,6 @@
 # Studiocalculator
 
-Studiocalculator v0.8.1 ist eine kleine, installierbare Web-App für die schnelle
+Studiocalculator v0.9.0 ist eine kleine, installierbare Web-App für die schnelle
 Rentabilitäts-, Kapitalbedarfs- und Finanzierungsrechnung von
 Fitnessstudio-Projekten.
 
@@ -47,7 +47,7 @@ Zentrale für Gespräche, Anforderungen und Entscheidungen.
 Auf Smartphone, Tablet und Computer kann die über GitHub Pages veröffentlichte
 App direkt im Browser genutzt und auf geeigneten Geräten installiert werden.
 Nach dem ersten erfolgreichen Aufruf steht die App auch ohne Internetverbindung
-zur Verfügung. Der aktuelle Entwurf und benannte Projekte werden in v0.8.1 lokal
+zur Verfügung. Der aktuelle Entwurf und benannte Projekte werden in v0.9.0 lokal
 im jeweiligen Browser gespeichert. Ein Freigabelink ermöglicht den
 direkten Wechsel auf ein anderes Gerät oder die Weitergabe an Teammitglieder;
 eine automatische Cloud-Synchronisierung findet weiterhin nicht statt.
@@ -93,8 +93,13 @@ nicht an den Webserver übertragen.
 - klare Trennung zwischen frei gewählter Liquiditätsreserve und prognostiziertem
   Liquiditätsbedarf im Hochlauf
 - wechselseitige Berechnung von Monatsmiete und Kaltmiete je m²
-- Eigenkapital, Bankdarlehen, Fördermittel und leasingfinanzierter Anteil
-- vereinfachte Annuitätenrechnung mit Zins, Laufzeit und tilgungsfreier Anlaufzeit
+- getrennte Finanzierungsblöcke für Bankdarlehen, Leasing und private Investoren
+- Leasing mit Zins, Laufzeit, veränderbarer Monats- und Abschlussrate sowie
+  wahlweise einer Belastung des Fälligkeits-Cashflows oder einer gleichmäßigen
+  monatlichen Rücklage
+- private Investoren mit monatlicher Kapitalrückzahlung, Zins auf das offene
+  Kapital und Restzahlung bei Fälligkeit
+- vereinfachte Bank-Annuitätenrechnung mit Zins, Laufzeit und tilgungsfreier Anlaufzeit
 - Finanzierungssaldo, Eigenkapitalquote und monatlicher Schuldendienst
 - Cashflow nach Finanzierung, DSCR und vereinfachte Eigenkapitalrendite
 - Vergleich von vorsichtigem, Basis- und optimistischem Mitgliederszenario

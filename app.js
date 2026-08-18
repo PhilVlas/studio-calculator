@@ -1,3 +1,54 @@
+function localISODate(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseISODate(isoDate) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate || "")) return null;
+  const [year, month, day] = isoDate.split("-").map(Number);
+  const parsed = new Date(year, month - 1, day, 12);
+  if (
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() !== month - 1 ||
+    parsed.getDate() !== day
+  ) {
+    return null;
+  }
+  return parsed;
+}
+
+function addMonthsToISO(isoDate, months) {
+  const start = parseISODate(isoDate);
+  if (start === null) return "";
+  const wholeMonths = Math.max(0, Math.round(months));
+  const targetMonth = start.getMonth() + wholeMonths;
+  const lastDay = new Date(start.getFullYear(), targetMonth + 1, 0).getDate();
+  const target = new Date(
+    start.getFullYear(),
+    targetMonth,
+    Math.min(start.getDate(), lastDay),
+    12,
+  );
+  return localISODate(target);
+}
+
+function monthsBetweenISO(startISO, dueISO) {
+  const start = parseISODate(startISO);
+  const due = parseISODate(dueISO);
+  if (start === null || due === null || due <= start) return 0;
+  let months =
+    (due.getFullYear() - start.getFullYear()) * 12 +
+    due.getMonth() -
+    start.getMonth();
+  if (addMonthsToISO(startISO, months) < dueISO) months += 1;
+  return Math.max(1, months);
+}
+
+const DEFAULT_FINANCING_START_DATE = localISODate();
+const DEFAULT_FINANCING_TERM_MONTHS = 60;
+
 const defaults = {
   projectName: "Studio Musterstadt",
   area: 500,
@@ -20,20 +71,37 @@ const defaults = {
   foundingCosts: 30000,
   reserveMonths: 3,
   equity: 100000,
+  financingStartDate: DEFAULT_FINANCING_START_DATE,
   bankLoan: 200000,
   grants: 0,
   leaseFinancing: 0,
   loanInterest: 5.5,
   loanTermYears: 10,
   graceMonths: 0,
+  leaseInterest: 5.5,
+  leaseTermMonths: DEFAULT_FINANCING_TERM_MONTHS,
+  leaseDueDate: addMonthsToISO(
+    DEFAULT_FINANCING_START_DATE,
+    DEFAULT_FINANCING_TERM_MONTHS,
+  ),
+  leaseFinalPayment: 0,
+  leaseFinalPaymentAffectsCashflow: true,
   monthlyLeasePayment: 0,
+  investorCapital: 0,
+  investorInterest: 8,
+  investorTermMonths: DEFAULT_FINANCING_TERM_MONTHS,
+  investorDueDate: addMonthsToISO(
+    DEFAULT_FINANCING_START_DATE,
+    DEFAULT_FINANCING_TERM_MONTHS,
+  ),
+  investorMonthlyPrincipalPercent: 1,
   startMembers: 350,
   rampMonths: 12,
   projectionMonths: 24,
   scenarioVariance: 15,
 };
 
-const APP_VERSION = "0.8.1";
+const APP_VERSION = "0.9.0";
 const PROJECT_FILE_FORMAT = "studiocalculator-project";
 const LEGACY_PROJECT_FILE_FORMATS = new Set(["studio-calculator-project"]);
 const PROJECT_SCHEMA_VERSION = 1;
@@ -90,6 +158,14 @@ function value(id) {
   return Number.isFinite(parsed) ? Math.max(parsed, 0) : 0;
 }
 
+function checked(id) {
+  return document.querySelector(`#${id}`).checked;
+}
+
+function textValue(id) {
+  return document.querySelector(`#${id}`).value;
+}
+
 function setText(id, content) {
   document.querySelector(`#${id}`).textContent = content;
 }
@@ -113,6 +189,20 @@ function normalizeProjectData(rawData = {}) {
     }
 
     const hasStoredValue = Object.prototype.hasOwnProperty.call(rawData, id);
+
+    if (input.type === "checkbox") {
+      const rawValue = hasStoredValue ? rawData[id] : defaultValue;
+      normalized[id] =
+        rawValue === true || rawValue === 1 || rawValue === "1" || rawValue === "true";
+      return;
+    }
+
+    if (input.type === "date") {
+      const rawValue = hasStoredValue ? rawData[id] : defaultValue;
+      normalized[id] = parseISODate(rawValue) === null ? "" : rawValue;
+      return;
+    }
+
     const parsed = Number.parseFloat(rawData[id]);
     let nextValue = Number.isFinite(parsed)
       ? parsed
@@ -132,7 +222,8 @@ function normalizeProjectData(rawData = {}) {
 function collectProjectData() {
   const rawData = {};
   Object.keys(defaults).forEach((id) => {
-    rawData[id] = document.querySelector(`#${id}`).value;
+    const input = document.querySelector(`#${id}`);
+    rawData[id] = input.type === "checkbox" ? input.checked : input.value;
   });
   return normalizeProjectData(rawData);
 }
@@ -140,8 +231,14 @@ function collectProjectData() {
 function applyProjectData(rawData) {
   const data = normalizeProjectData(rawData);
   Object.entries(data).forEach(([id, storedValue]) => {
-    document.querySelector(`#${id}`).value = storedValue;
+    const input = document.querySelector(`#${id}`);
+    if (input.type === "checkbox") {
+      input.checked = storedValue;
+    } else {
+      input.value = storedValue;
+    }
   });
+  syncMaturityFields("financingStartDate");
   calculate();
   return data;
 }
@@ -553,11 +650,99 @@ function formatReserveFormula(reserveMonths, monthlyCosts, liquidityReserve) {
   return `${monthCount} Mon. × ${euro.format(monthlyCosts)} = ${euro.format(liquidityReserve)}`;
 }
 
+function formatDate(isoDate) {
+  const date = parseISODate(isoDate);
+  if (date === null) return "Nicht angegeben";
+  return new Intl.DateTimeFormat("de-DE", { dateStyle: "medium" }).format(date);
+}
+
 function annuityPayment(principal, monthlyInterest, months) {
   if (principal <= 0) return 0;
   if (!Number.isFinite(months) || months <= 0) return 0;
   if (monthlyInterest <= 0) return principal / months;
   return principal * (monthlyInterest / (1 - (1 + monthlyInterest) ** -months));
+}
+
+function leasePayment(principal, annualInterest, months, finalPayment) {
+  if (principal <= 0 || months <= 0) return 0;
+  const monthlyInterest = Math.max(0, annualInterest) / 100 / 12;
+  const balloon = Math.max(0, finalPayment);
+  if (monthlyInterest <= 0) return Math.max(0, (principal - balloon) / months);
+  const discountFactor = (1 + monthlyInterest) ** -months;
+  const financedPresentValue = principal - balloon * discountFactor;
+  return Math.max(
+    0,
+    financedPresentValue * (monthlyInterest / (1 - discountFactor)),
+  );
+}
+
+function leaseFinalPayment(principal, annualInterest, months, monthlyPayment) {
+  if (principal <= 0 || months <= 0) return 0;
+  const monthlyInterest = Math.max(0, annualInterest) / 100 / 12;
+  const payment = Math.max(0, monthlyPayment);
+  if (monthlyInterest <= 0) return Math.max(0, principal - payment * months);
+  const futureFactor = (1 + monthlyInterest) ** months;
+  const paymentFutureValue = payment * ((futureFactor - 1) / monthlyInterest);
+  return Math.max(0, principal * futureFactor - paymentFutureValue);
+}
+
+function investorScheduleForMonth({
+  capital,
+  annualInterest,
+  monthlyPrincipalPercent,
+  termMonths,
+  month,
+}) {
+  const term = Math.max(1, Math.round(termMonths));
+  if (capital <= 0 || month < 1 || month > term) {
+    return {
+      openingBalance: 0,
+      interest: 0,
+      scheduledPrincipal: 0,
+      finalPrincipal: 0,
+      totalPayment: 0,
+      closingBalance: 0,
+    };
+  }
+
+  const monthlyPrincipal = capital * Math.min(monthlyPrincipalPercent, 100) / 100;
+  const openingBalance = Math.max(0, capital - monthlyPrincipal * (month - 1));
+  const interest = openingBalance * Math.max(0, annualInterest) / 100 / 12;
+  const scheduledPrincipal = Math.min(openingBalance, monthlyPrincipal);
+  const balanceAfterScheduled = Math.max(0, openingBalance - scheduledPrincipal);
+  const finalPrincipal = month === term ? balanceAfterScheduled : 0;
+  const closingBalance = Math.max(0, balanceAfterScheduled - finalPrincipal);
+
+  return {
+    openingBalance,
+    interest,
+    scheduledPrincipal,
+    finalPrincipal,
+    totalPayment: interest + scheduledPrincipal + finalPrincipal,
+    closingBalance,
+  };
+}
+
+function investorSummary(capital, annualInterest, monthlyPrincipalPercent, termMonths) {
+  const term = Math.max(1, Math.round(termMonths));
+  let totalInterest = 0;
+  let finalPrincipal = 0;
+  let firstPayment = 0;
+
+  for (let month = 1; month <= term; month += 1) {
+    const schedule = investorScheduleForMonth({
+      capital,
+      annualInterest,
+      monthlyPrincipalPercent,
+      termMonths: term,
+      month,
+    });
+    if (month === 1) firstPayment = schedule.totalPayment - schedule.finalPrincipal;
+    totalInterest += schedule.interest;
+    finalPrincipal += schedule.finalPrincipal;
+  }
+
+  return { firstPayment, totalInterest, finalPrincipal };
 }
 
 function operatingScenario(memberCount, grossFee, vatRate, monthlyCosts, debtService) {
@@ -590,9 +775,19 @@ function renderProjection({
   grossFee,
   vatRate,
   monthlyCosts,
-  regularDebtService,
-  graceDebtService,
-  graceMonths,
+  bankLoanPayment,
+  bankGracePayment,
+  bankGraceMonths,
+  bankTermMonths,
+  monthlyLeasePayment,
+  leaseTermMonths,
+  leaseFinalPaymentAmount,
+  leaseFinalPaymentAffectsCashflow,
+  monthlyLeaseReserve,
+  investorCapital,
+  investorInterest,
+  investorMonthlyPrincipalPercent,
+  investorTermMonths,
   monthlyRent,
   rentFreeMonths,
   capitalRequirement,
@@ -607,7 +802,35 @@ function renderProjection({
     const progress =
       rampMonths <= 1 ? 1 : Math.min((month - 1) / (rampMonths - 1), 1);
     const memberCount = startMembers + (targetMembers - startMembers) * progress;
-    const debtService = month <= graceMonths ? graceDebtService : regularDebtService;
+    const bankDebtService =
+      month <= bankGraceMonths
+        ? bankGracePayment
+        : month <= bankTermMonths
+          ? bankLoanPayment
+          : 0;
+    const leaseRate = month <= leaseTermMonths ? monthlyLeasePayment : 0;
+    const leaseFinalPaymentDue =
+      leaseFinalPaymentAffectsCashflow && month === leaseTermMonths
+        ? leaseFinalPaymentAmount
+        : 0;
+    const leaseReserve =
+      !leaseFinalPaymentAffectsCashflow && month <= leaseTermMonths
+        ? monthlyLeaseReserve
+        : 0;
+    const investorSchedule = investorScheduleForMonth({
+      capital: investorCapital,
+      annualInterest: investorInterest,
+      monthlyPrincipalPercent: investorMonthlyPrincipalPercent,
+      termMonths: investorTermMonths,
+      month,
+    });
+    const specialPayment = leaseFinalPaymentDue + investorSchedule.finalPrincipal;
+    const debtService =
+      bankDebtService +
+      leaseRate +
+      leaseReserve +
+      leaseFinalPaymentDue +
+      investorSchedule.totalPayment;
     const effectiveMonthlyCosts =
       month <= rentFreeMonths
         ? Math.max(0, monthlyCosts - monthlyRent)
@@ -628,7 +851,16 @@ function renderProjection({
     ) {
       capitalRecoveryMonth = month;
     }
-    months.push({ month, cumulativeCashflow, ...scenario });
+    months.push({
+      month,
+      cumulativeCashflow,
+      bankDebtService,
+      leaseDebtService: leaseRate + leaseReserve + leaseFinalPaymentDue,
+      leaseReserve,
+      investorDebtService: investorSchedule.totalPayment,
+      specialPayment,
+      ...scenario,
+    });
   }
 
   const finalMonth = months.at(-1);
@@ -655,9 +887,9 @@ function renderProjection({
       item.setAttribute("role", "listitem");
       item.setAttribute(
         "aria-label",
-        `Monat ${month.month}: ${Math.round(month.memberCount).toLocaleString("de-DE")} Mitglieder, ${euro.format(month.cashflow)} Cashflow.`,
+        `Monat ${month.month}: ${Math.round(month.memberCount).toLocaleString("de-DE")} Mitglieder, ${euro.format(month.cashflow)} Cashflow${month.specialPayment > 0 ? `, davon ${euro.format(month.specialPayment)} Sonderzahlung` : ""}.`,
       );
-      item.title = `${euro.format(month.cashflow)} Cashflow`;
+      item.title = `${euro.format(month.cashflow)} Cashflow${month.specialPayment > 0 ? ` · ${euro.format(month.specialPayment)} Sonderzahlung` : ""}`;
       item.textContent = `M${month.month}`;
       return item;
     }),
@@ -673,13 +905,14 @@ function renderProjection({
       const values = [
         Math.round(month.memberCount).toLocaleString("de-DE"),
         euro.format(month.operatingResult),
+        euro.format(month.specialPayment),
         euro.format(month.cashflow),
         euro.format(month.cumulativeCashflow),
       ];
       const cells = values.map((content, index) => {
         const cell = document.createElement("td");
         cell.textContent = content;
-        if ((index === 2 && month.cashflow < 0) || (index === 3 && month.cumulativeCashflow < 0)) {
+        if ((index === 3 && month.cashflow < 0) || (index === 4 && month.cumulativeCashflow < 0)) {
           cell.dataset.state = "negative";
         }
         return cell;
@@ -710,6 +943,73 @@ function syncRentFields(sourceId) {
   } else if (sourceId === "rentPerArea" || sourceId === "area") {
     const monthlyRent = area * value("rentPerArea");
     rentInput.value = monthlyRent.toFixed(2);
+  }
+}
+
+function syncMaturityFields(sourceId) {
+  const startDate = textValue("financingStartDate");
+  const leaseTermInput = document.querySelector("#leaseTermMonths");
+  const leaseDueInput = document.querySelector("#leaseDueDate");
+  const investorTermInput = document.querySelector("#investorTermMonths");
+  const investorDueInput = document.querySelector("#investorDueDate");
+  const earliestDueDate = addMonthsToISO(startDate, 1);
+
+  leaseDueInput.min = earliestDueDate;
+  investorDueInput.min = earliestDueDate;
+
+  if (sourceId === "financingStartDate") {
+    leaseDueInput.value = addMonthsToISO(startDate, value("leaseTermMonths"));
+    investorDueInput.value = addMonthsToISO(startDate, value("investorTermMonths"));
+  } else if (sourceId === "leaseTermMonths") {
+    leaseDueInput.value = addMonthsToISO(startDate, value("leaseTermMonths"));
+  } else if (sourceId === "leaseDueDate") {
+    const months = monthsBetweenISO(startDate, leaseDueInput.value);
+    if (months > 0) {
+      leaseTermInput.value = months;
+    } else if (earliestDueDate) {
+      leaseTermInput.value = 1;
+      leaseDueInput.value = earliestDueDate;
+    }
+  } else if (sourceId === "investorTermMonths") {
+    investorDueInput.value = addMonthsToISO(startDate, value("investorTermMonths"));
+  } else if (sourceId === "investorDueDate") {
+    const months = monthsBetweenISO(startDate, investorDueInput.value);
+    if (months > 0) {
+      investorTermInput.value = months;
+    } else if (earliestDueDate) {
+      investorTermInput.value = 1;
+      investorDueInput.value = earliestDueDate;
+    }
+  }
+}
+
+function syncLeaseFields(sourceId) {
+  const paymentInput = document.querySelector("#monthlyLeasePayment");
+  const finalPaymentInput = document.querySelector("#leaseFinalPayment");
+  const leaseCalculationInputs = new Set([
+    "leaseFinancing",
+    "leaseInterest",
+    "leaseTermMonths",
+    "leaseDueDate",
+    "leaseFinalPayment",
+  ]);
+
+  if (sourceId === "monthlyLeasePayment") {
+    const calculatedFinalPayment = leaseFinalPayment(
+      value("leaseFinancing"),
+      value("leaseInterest"),
+      Math.max(1, Math.round(value("leaseTermMonths"))),
+      value("monthlyLeasePayment"),
+    );
+    finalPaymentInput.value = calculatedFinalPayment.toFixed(2);
+  } else if (leaseCalculationInputs.has(sourceId)) {
+    const calculatedPayment = leasePayment(
+      value("leaseFinancing"),
+      value("leaseInterest"),
+      Math.max(1, Math.round(value("leaseTermMonths"))),
+      value("leaseFinalPayment"),
+    );
+    paymentInput.value = calculatedPayment.toFixed(2);
   }
 }
 
@@ -754,14 +1054,18 @@ function calculate() {
   const roi = capitalRequirement > 0 ? (annualResult / capitalRequirement) * 100 : null;
 
   const equity = value("equity");
+  const financingStartDate = textValue("financingStartDate");
   const bankLoan = value("bankLoan");
   const grants = value("grants");
   const leaseFinancing = value("leaseFinancing");
-  const totalFunding = equity + bankLoan + grants + leaseFinancing;
+  const investorCapital = value("investorCapital");
+  const totalFunding =
+    equity + bankLoan + grants + leaseFinancing + investorCapital;
   const financingGap = capitalRequirement - totalFunding;
   const equityRatio = capitalRequirement > 0 ? (equity / capitalRequirement) * 100 : null;
 
-  const monthlyInterest = value("loanInterest") / 100 / 12;
+  const loanInterest = value("loanInterest");
+  const monthlyInterest = loanInterest / 100 / 12;
   const totalLoanMonths = Math.max(1, Math.round(value("loanTermYears") * 12));
   const graceMonths = Math.min(
     Math.round(value("graceMonths")),
@@ -774,9 +1078,45 @@ function calculate() {
     0,
     gracePayment * graceMonths + monthlyLoanPayment * repaymentMonths - bankLoan,
   );
+
+  const leaseInterest = value("leaseInterest");
+  const leaseTermMonths = Math.max(1, Math.round(value("leaseTermMonths")));
+  const leaseDueDate = textValue("leaseDueDate");
+  const leaseFinalPaymentAmount = value("leaseFinalPayment");
+  const leaseFinalPaymentAffectsCashflow = checked(
+    "leaseFinalPaymentAffectsCashflow",
+  );
   const monthlyLeasePayment = value("monthlyLeasePayment");
-  const monthlyDebtService = monthlyLoanPayment + monthlyLeasePayment;
-  const graceDebtService = gracePayment + monthlyLeasePayment;
+  const leaseTotalInterest = Math.max(
+    0,
+    monthlyLeasePayment * leaseTermMonths +
+      leaseFinalPaymentAmount -
+      leaseFinancing,
+  );
+  const suggestedLeaseReserve =
+    !leaseFinalPaymentAffectsCashflow && leaseTermMonths > 0
+      ? leaseFinalPaymentAmount / leaseTermMonths
+      : 0;
+
+  const investorInterest = value("investorInterest");
+  const investorTermMonths = Math.max(1, Math.round(value("investorTermMonths")));
+  const investorDueDate = textValue("investorDueDate");
+  const investorMonthlyPrincipalPercent = Math.min(
+    value("investorMonthlyPrincipalPercent"),
+    100,
+  );
+  const investor = investorSummary(
+    investorCapital,
+    investorInterest,
+    investorMonthlyPrincipalPercent,
+    investorTermMonths,
+  );
+
+  const monthlyDebtService =
+    monthlyLoanPayment +
+    monthlyLeasePayment +
+    suggestedLeaseReserve +
+    investor.firstPayment;
   const cashflowAfterFinancing = monthlyResult - monthlyDebtService;
   const dscr = monthlyDebtService > 0 ? monthlyResult / monthlyDebtService : null;
   const equityReturn = equity > 0 ? (cashflowAfterFinancing * 12 * 100) / equity : null;
@@ -829,9 +1169,19 @@ function calculate() {
     grossFee,
     vatRate,
     monthlyCosts,
-    regularDebtService: monthlyDebtService,
-    graceDebtService,
-    graceMonths,
+    bankLoanPayment: monthlyLoanPayment,
+    bankGracePayment: gracePayment,
+    bankGraceMonths: graceMonths,
+    bankTermMonths: totalLoanMonths,
+    monthlyLeasePayment,
+    leaseTermMonths,
+    leaseFinalPaymentAmount,
+    leaseFinalPaymentAffectsCashflow,
+    monthlyLeaseReserve: suggestedLeaseReserve,
+    investorCapital,
+    investorInterest,
+    investorMonthlyPrincipalPercent,
+    investorTermMonths,
     monthlyRent: rent,
     rentFreeMonths,
     capitalRequirement,
@@ -863,6 +1213,20 @@ function calculate() {
   setText("equityRatio", equityRatio === null ? "–" : `${decimal.format(equityRatio)} %`);
   setText("monthlyLoanPayment", `${euro.format(monthlyLoanPayment)} / Mon.`);
   setText("monthlyDebtService", `${euro.format(monthlyDebtService)} / Mon.`);
+  setText("monthlyLeasePaymentResult", `${euro.format(monthlyLeasePayment)} / Mon.`);
+  setText("leaseFinalPaymentResult", euro.format(leaseFinalPaymentAmount));
+  setText("leaseDueDateResult", formatDate(leaseDueDate));
+  setText("leaseTotalInterest", euro.format(leaseTotalInterest));
+  setText(
+    "suggestedLeaseReserve",
+    leaseFinalPaymentAffectsCashflow
+      ? "Keine laufende Rücklage angesetzt"
+      : `${euro.format(suggestedLeaseReserve)} / Mon. im Cashflow`,
+  );
+  setText("investorFirstPayment", `${euro.format(investor.firstPayment)} / Mon.`);
+  setText("investorFinalPayment", euro.format(investor.finalPrincipal));
+  setText("investorDueDateResult", formatDate(investorDueDate));
+  setText("investorTotalInterest", euro.format(investor.totalInterest));
   setText("dscr", dscr === null ? "Nicht anwendbar" : `${decimal.format(dscr)} ×`);
   setText(
     "equityReturn",
@@ -933,12 +1297,30 @@ function calculate() {
     capitalRequirement,
     roi,
     equity,
+    financingStartDate,
     bankLoan,
     grants,
     leaseFinancing,
+    leaseInterest,
+    leaseTermMonths,
+    leaseDueDate,
+    leaseFinalPaymentAmount,
+    leaseFinalPaymentAffectsCashflow,
+    monthlyLeasePayment,
+    leaseTotalInterest,
+    suggestedLeaseReserve,
+    investorCapital,
+    investorInterest,
+    investorTermMonths,
+    investorDueDate,
+    investorMonthlyPrincipalPercent,
+    investor,
     financingGap,
-    loanInterest: value("loanInterest"),
+    loanInterest,
     loanTermYears: value("loanTermYears"),
+    graceMonths,
+    monthlyLoanPayment,
+    totalInterest,
     monthlyDebtService,
     cashflowAfterFinancing,
     conservativeScenario,
@@ -1009,10 +1391,28 @@ function calculate() {
     const cashflowDirection =
       cashflowAfterFinancing >= 0 ? "ein Überschuss" : "eine Unterdeckung";
     insightItems.push(
-      `Nach ${euro.format(monthlyDebtService)} monatlichem Schuldendienst verbleibt ${cashflowDirection} von ${euro.format(Math.abs(cashflowAfterFinancing))}.`,
+      `Nach ${euro.format(monthlyDebtService)} regelmäßiger Finanzierungsbelastung verbleibt ${cashflowDirection} von ${euro.format(Math.abs(cashflowAfterFinancing))}.`,
     );
   } else {
-    insightItems.push("Ohne Darlehens- oder Leasingrate entspricht der Cashflow dem Betriebsergebnis.");
+    insightItems.push(
+      "Ohne Bankrate, Leasingrate oder Investorenzahlung entspricht der Cashflow dem Betriebsergebnis.",
+    );
+  }
+
+  if (
+    leaseFinancing > 0 &&
+    leaseFinalPaymentAmount > 0 &&
+    !leaseFinalPaymentAffectsCashflow
+  ) {
+    insightItems.push(
+      `Die Leasing-Abschlussrate von ${euro.format(leaseFinalPaymentAmount)} ist nicht im Fälligkeitsmonat abgezogen. Stattdessen mindert eine gleichmäßige Rücklage von ${euro.format(suggestedLeaseReserve)} pro Monat den Cashflow.`,
+    );
+  }
+
+  if (investorCapital > 0 && investor.finalPrincipal > 0) {
+    insightItems.push(
+      `Bei Fälligkeit des Investorenkapitals verbleiben ${euro.format(investor.finalPrincipal)} Restkapital zur Rückzahlung.`,
+    );
   }
 
   insights.replaceChildren(
@@ -1094,9 +1494,12 @@ function preparePrintReport() {
     formatReserveFormula(data.reserveMonths, data.monthlyCosts, data.liquidityReserve),
   );
   setText("printEquity", euro.format(data.equity));
+  setText("printFinancingStartDate", formatDate(data.financingStartDate));
   setText("printLoan", euro.format(data.bankLoan));
+  setText("printBankAmount", euro.format(data.bankLoan));
   setText("printGrants", euro.format(data.grants));
   setText("printLeaseFinancing", euro.format(data.leaseFinancing));
+  setText("printInvestorCapital", euro.format(data.investorCapital));
   setText("printFundingBalance", fundingBalance);
   setText(
     "printInterest",
@@ -1106,7 +1509,43 @@ function preparePrintReport() {
     "printTerm",
     data.bankLoan > 0 ? `${decimal.format(data.loanTermYears)} Jahre` : "Nicht anwendbar",
   );
+  setText("printGraceMonths", `${data.graceMonths.toLocaleString("de-DE")} Monate`);
+  setText("printMonthlyLoanPayment", `${euro.format(data.monthlyLoanPayment)} / Monat`);
+  setText("printBankTotalInterest", euro.format(data.totalInterest));
   setText("printDebtService", `${euro.format(data.monthlyDebtService)} / Monat`);
+
+  setText("printLeaseAmount", euro.format(data.leaseFinancing));
+  setText("printLeaseInterest", `${decimal.format(data.leaseInterest)} % p. a.`);
+  setText("printLeaseTerm", `${data.leaseTermMonths.toLocaleString("de-DE")} Monate`);
+  setText("printLeaseMonthlyPayment", `${euro.format(data.monthlyLeasePayment)} / Monat`);
+  setText("printLeaseFinalPayment", euro.format(data.leaseFinalPaymentAmount));
+  setText("printLeaseDueDate", formatDate(data.leaseDueDate));
+  setText(
+    "printLeaseFinalCashflow",
+    data.leaseFinalPaymentAffectsCashflow ? "Berücksichtigt" : "Nicht berücksichtigt",
+  );
+  setText(
+    "printLeaseReserve",
+    data.leaseFinalPaymentAffectsCashflow
+      ? "Keine laufende Rücklage angesetzt"
+      : `${euro.format(data.suggestedLeaseReserve)} / Monat`,
+  );
+  setText("printLeaseTotalInterest", euro.format(data.leaseTotalInterest));
+
+  setText("printInvestorAmount", euro.format(data.investorCapital));
+  setText("printInvestorInterest", `${decimal.format(data.investorInterest)} % p. a.`);
+  setText(
+    "printInvestorTerm",
+    `${data.investorTermMonths.toLocaleString("de-DE")} Monate`,
+  );
+  setText("printInvestorDueDate", formatDate(data.investorDueDate));
+  setText(
+    "printInvestorPrincipalPercent",
+    `${decimal.format(data.investorMonthlyPrincipalPercent)} % vom Invest`,
+  );
+  setText("printInvestorFirstPayment", `${euro.format(data.investor.firstPayment)} / Monat`);
+  setText("printInvestorFinalPayment", euro.format(data.investor.finalPrincipal));
+  setText("printInvestorTotalInterest", euro.format(data.investor.totalInterest));
 
   const variance = decimal.format(data.scenarioVariance * 100);
   const scenarioRows = [
@@ -1157,12 +1596,13 @@ function preparePrintReport() {
           `Monat ${month.month}`,
           Math.round(month.memberCount).toLocaleString("de-DE"),
           euro.format(month.operatingResult),
+          euro.format(month.specialPayment),
           euro.format(month.cashflow),
           euro.format(month.cumulativeCashflow),
         ],
         [
-          ...(month.cashflow < 0 ? [3] : []),
-          ...(month.cumulativeCashflow < 0 ? [4] : []),
+          ...(month.cashflow < 0 ? [4] : []),
+          ...(month.cumulativeCashflow < 0 ? [5] : []),
         ],
       ),
     ),
@@ -1173,19 +1613,18 @@ function preparePrintReport() {
 
 form.addEventListener("input", (event) => {
   syncRentFields(event.target.id);
+  syncMaturityFields(event.target.id);
+  syncLeaseFields(event.target.id);
   calculate();
   queueDraftSave();
 });
 
 document.querySelector("#resetButton").addEventListener("click", () => {
   window.clearTimeout(autosaveTimer);
-  Object.entries(defaults).forEach(([id, defaultValue]) => {
-    document.querySelector(`#${id}`).value = defaultValue;
-  });
+  applyProjectData(defaults);
   activeProjectId = null;
   savedProjectSelect.value = "";
   updateProjectButtons();
-  calculate();
   saveDraft();
   document.querySelector("#projectName").focus();
 });
@@ -1217,7 +1656,11 @@ projectFileInput.addEventListener("change", () => {
 document.querySelector("#balanceFinancing").addEventListener("click", () => {
   const uncoveredAmount = Math.max(
     0,
-    lastCapitalRequirement - value("equity") - value("grants") - value("leaseFinancing"),
+    lastCapitalRequirement -
+      value("equity") -
+      value("grants") -
+      value("leaseFinancing") -
+      value("investorCapital"),
   );
   document.querySelector("#bankLoan").value = Math.round(uncoveredAmount);
   calculate();
@@ -1371,6 +1814,11 @@ navigator.serviceWorker?.addEventListener("controllerchange", () => {
   appReloading = true;
   window.location.reload();
 });
+
+document.querySelector("#financingStartDate").value = defaults.financingStartDate;
+document.querySelector("#leaseDueDate").value = defaults.leaseDueDate;
+document.querySelector("#investorDueDate").value = defaults.investorDueDate;
+syncMaturityFields("initial");
 
 showInstallOption();
 registerServiceWorker();
