@@ -101,7 +101,7 @@ const defaults = {
   scenarioVariance: 15,
 };
 
-const APP_VERSION = "0.9.0";
+const APP_VERSION = "0.10.0";
 const PROJECT_FILE_FORMAT = "studiocalculator-project";
 const LEGACY_PROJECT_FILE_FORMATS = new Set(["studio-calculator-project"]);
 const PROJECT_SCHEMA_VERSION = 1;
@@ -129,6 +129,9 @@ const installAppButton = document.querySelector("#installAppButton");
 const installStatus = document.querySelector("#installStatus");
 const updateNotice = document.querySelector("#updateNotice");
 const updateAppButton = document.querySelector("#updateAppButton");
+const plausibilityPanel = document.querySelector("#plausibilityPanel");
+const plausibilityStatus = document.querySelector("#plausibilityStatus");
+const plausibilityWarnings = document.querySelector("#plausibilityWarnings");
 let lastCapitalRequirement = 0;
 let lastReportData = null;
 let activeProjectId = null;
@@ -797,6 +800,8 @@ function renderProjection({
   let lowestCumulativeCashflow = 0;
   let firstPositiveMonth = null;
   let capitalRecoveryMonth = capitalRequirement <= 0 ? 0 : null;
+  let accumulatedLeaseReserve = 0;
+  let leaseReserveBalance = 0;
 
   for (let month = 1; month <= projectionMonths; month += 1) {
     const progress =
@@ -817,6 +822,14 @@ function renderProjection({
       !leaseFinalPaymentAffectsCashflow && month <= leaseTermMonths
         ? monthlyLeaseReserve
         : 0;
+    accumulatedLeaseReserve += leaseReserve;
+    leaseReserveBalance += leaseReserve;
+    const leaseReserveBeforePayment = leaseReserveBalance;
+    const leaseReservePayment =
+      !leaseFinalPaymentAffectsCashflow && month === leaseTermMonths
+        ? Math.min(leaseReserveBalance, leaseFinalPaymentAmount)
+        : 0;
+    leaseReserveBalance = Math.max(0, leaseReserveBalance - leaseReservePayment);
     const investorSchedule = investorScheduleForMonth({
       capital: investorCapital,
       annualInterest: investorInterest,
@@ -857,6 +870,10 @@ function renderProjection({
       bankDebtService,
       leaseDebtService: leaseRate + leaseReserve + leaseFinalPaymentDue,
       leaseReserve,
+      accumulatedLeaseReserve,
+      leaseReserveBalance,
+      leaseReserveBeforePayment,
+      leaseReservePayment,
       investorDebtService: investorSchedule.totalPayment,
       specialPayment,
       ...scenario,
@@ -878,6 +895,7 @@ function renderProjection({
     "projectionEndMembers",
     Math.round(finalMonth.memberCount).toLocaleString("de-DE"),
   );
+  setText("projectionLeaseReserve", euro.format(leaseReserveBalance));
 
   cashflowMap.replaceChildren(
     ...months.map((month) => {
@@ -887,9 +905,9 @@ function renderProjection({
       item.setAttribute("role", "listitem");
       item.setAttribute(
         "aria-label",
-        `Monat ${month.month}: ${Math.round(month.memberCount).toLocaleString("de-DE")} Mitglieder, ${euro.format(month.cashflow)} Cashflow${month.specialPayment > 0 ? `, davon ${euro.format(month.specialPayment)} Sonderzahlung` : ""}.`,
+        `Monat ${month.month}: ${Math.round(month.memberCount).toLocaleString("de-DE")} Mitglieder, ${euro.format(month.cashflow)} Cashflow${month.leaseReserveBeforePayment > 0 ? `, ${euro.format(month.leaseReserveBeforePayment)} Leasing-Rücklage vor einer möglichen Zahlung` : ""}${month.leaseReservePayment > 0 ? `, ${euro.format(month.leaseReservePayment)} aus der Rücklage verwendet` : ""}${month.specialPayment > 0 ? `, davon ${euro.format(month.specialPayment)} Sonderzahlung` : ""}.`,
       );
-      item.title = `${euro.format(month.cashflow)} Cashflow${month.specialPayment > 0 ? ` · ${euro.format(month.specialPayment)} Sonderzahlung` : ""}`;
+      item.title = `${euro.format(month.cashflow)} Cashflow${month.leaseReserveBalance > 0 ? ` · ${euro.format(month.leaseReserveBalance)} Rücklagenstand` : ""}${month.leaseReservePayment > 0 ? ` · ${euro.format(month.leaseReservePayment)} aus Rücklage bezahlt` : ""}${month.specialPayment > 0 ? ` · ${euro.format(month.specialPayment)} Sonderzahlung` : ""}`;
       item.textContent = `M${month.month}`;
       return item;
     }),
@@ -905,6 +923,7 @@ function renderProjection({
       const values = [
         Math.round(month.memberCount).toLocaleString("de-DE"),
         euro.format(month.operatingResult),
+        euro.format(month.leaseReserveBalance),
         euro.format(month.specialPayment),
         euro.format(month.cashflow),
         euro.format(month.cumulativeCashflow),
@@ -912,7 +931,7 @@ function renderProjection({
       const cells = values.map((content, index) => {
         const cell = document.createElement("td");
         cell.textContent = content;
-        if ((index === 3 && month.cashflow < 0) || (index === 4 && month.cumulativeCashflow < 0)) {
+        if ((index === 4 && month.cashflow < 0) || (index === 5 && month.cumulativeCashflow < 0)) {
           cell.dataset.state = "negative";
         }
         return cell;
@@ -929,6 +948,8 @@ function renderProjection({
     firstPositiveMonth,
     capitalRecoveryMonth,
     endMembers: finalMonth.memberCount,
+    accumulatedLeaseReserve,
+    leaseReserveBalance,
   };
 }
 
@@ -1011,6 +1032,136 @@ function syncLeaseFields(sourceId) {
     );
     paymentInput.value = calculatedPayment.toFixed(2);
   }
+}
+
+function buildPlausibilityWarnings({
+  capitalRequirement,
+  financingGap,
+  projectionMonths,
+  bankLoan,
+  totalLoanMonths,
+  leaseFinancing,
+  leaseFinalPaymentAmount,
+  leaseTermMonths,
+  leaseDueDate,
+  monthlyLeasePayment,
+  investorCapital,
+  investorMonthlyPrincipalPercent,
+  investorTermMonths,
+  investorDueDate,
+  investorFinalPrincipal,
+}) {
+  const items = [];
+  const meaningfulGap = Math.max(500, capitalRequirement * 0.01);
+  const significantSurplus = Math.max(25000, capitalRequirement * 0.3);
+
+  if (financingGap > meaningfulGap) {
+    items.push({
+      level: "warning",
+      text: `Die Finanzierung lässt ${euro.format(financingGap)} des Kapitalbedarfs ungedeckt.`,
+    });
+  } else if (financingGap < -significantSurplus) {
+    items.push({
+      level: "warning",
+      text: `Die eingetragenen Finanzierungsquellen übersteigen den Kapitalbedarf um ${euro.format(Math.abs(financingGap))}. Bitte prüfen, ob alle Beträge tatsächlich zusätzlich benötigt werden.`,
+    });
+  }
+
+  if (bankLoan > 0 && totalLoanMonths > projectionMonths) {
+    items.push({
+      level: "info",
+      text: `Die Bankfinanzierung läuft länger als die Cashflow-Betrachtung. Nach Monat ${projectionMonths.toLocaleString("de-DE")} fallen weiterhin Bankraten an.`,
+    });
+  }
+
+  if (leaseFinancing > 0) {
+    if (!leaseDueDate) {
+      items.push({
+        level: "warning",
+        text: "Für das Leasing fehlt ein Fälligkeitsdatum.",
+      });
+    }
+    if (leaseFinalPaymentAmount > leaseFinancing) {
+      items.push({
+        level: "warning",
+        text: `Die Leasing-Abschlussrate von ${euro.format(leaseFinalPaymentAmount)} ist höher als der finanzierte Leasingbetrag von ${euro.format(leaseFinancing)}.`,
+      });
+    }
+    if (monthlyLeasePayment <= 0 && leaseFinalPaymentAmount > 0) {
+      items.push({
+        level: "info",
+        text: "Das Leasing wird ohne laufende Rate ausschließlich über die Abschlussrate zurückgeführt.",
+      });
+    }
+    if (leaseFinalPaymentAmount > 0 && leaseTermMonths > projectionMonths) {
+      items.push({
+        level: "warning",
+        text: `Die Leasing-Abschlussrate wird erst in Monat ${leaseTermMonths.toLocaleString("de-DE")} fällig und liegt damit außerhalb der gewählten Cashflow-Betrachtung.`,
+      });
+    }
+  }
+
+  if (investorCapital > 0) {
+    if (!investorDueDate) {
+      items.push({
+        level: "warning",
+        text: "Für das private Investorenkapital fehlt ein Fälligkeitsdatum.",
+      });
+    }
+    if (investorFinalPrincipal > 0 && investorTermMonths > projectionMonths) {
+      items.push({
+        level: "warning",
+        text: `Die Investoren-Restzahlung von ${euro.format(investorFinalPrincipal)} wird erst in Monat ${investorTermMonths.toLocaleString("de-DE")} fällig und liegt außerhalb der Cashflow-Betrachtung.`,
+      });
+    }
+    if (investorMonthlyPrincipalPercent <= 0) {
+      items.push({
+        level: "info",
+        text: "Während der Investorenlaufzeit werden nur Zinsen gezahlt; das gesamte Investorenkapital wird bei Fälligkeit zurückgeführt.",
+      });
+    } else {
+      const payoffMonth = Math.ceil(100 / investorMonthlyPrincipalPercent);
+      if (payoffMonth < investorTermMonths) {
+        items.push({
+          level: "info",
+          text: `Das Investorenkapital ist bei gleichbleibender Rückzahlung bereits in Monat ${payoffMonth.toLocaleString("de-DE")} vollständig zurückgezahlt – vor der eingetragenen Fälligkeit in Monat ${investorTermMonths.toLocaleString("de-DE")}.`,
+        });
+      }
+    }
+  }
+
+  return items;
+}
+
+function renderPlausibilityWarnings(items) {
+  const hasWarning = items.some((item) => item.level === "warning");
+  plausibilityPanel.dataset.state = hasWarning
+    ? "warning"
+    : items.length > 0
+      ? "info"
+      : "clear";
+  plausibilityStatus.textContent =
+    items.length === 0
+      ? "Keine Auffälligkeiten"
+      : `${items.length.toLocaleString("de-DE")} ${items.length === 1 ? "Hinweis" : "Hinweise"}`;
+
+  const displayedItems =
+    items.length > 0
+      ? items
+      : [
+          {
+            level: "clear",
+            text: "Für die aktuellen Eingaben wurden keine rechnerischen Auffälligkeiten erkannt.",
+          },
+        ];
+  plausibilityWarnings.replaceChildren(
+    ...displayedItems.map((item) => {
+      const listItem = document.createElement("li");
+      listItem.dataset.level = item.level;
+      listItem.textContent = item.text;
+      return listItem;
+    }),
+  );
 }
 
 function calculate() {
@@ -1097,6 +1248,11 @@ function calculate() {
     !leaseFinalPaymentAffectsCashflow && leaseTermMonths > 0
       ? leaseFinalPaymentAmount / leaseTermMonths
       : 0;
+  const leaseReserveAtMaturity = suggestedLeaseReserve * leaseTermMonths;
+  const leaseReserveCoverage =
+    !leaseFinalPaymentAffectsCashflow && leaseFinalPaymentAmount > 0
+      ? (leaseReserveAtMaturity / leaseFinalPaymentAmount) * 100
+      : null;
 
   const investorInterest = value("investorInterest");
   const investorTermMonths = Math.max(1, Math.round(value("investorTermMonths")));
@@ -1159,7 +1315,7 @@ function calculate() {
   const rampMonths = Math.max(1, Math.min(60, Math.round(value("rampMonths"))));
   const projectionMonths = Math.max(
     1,
-    Math.min(60, Math.round(value("projectionMonths"))),
+    Math.min(180, Math.round(value("projectionMonths"))),
   );
   const projection = renderProjection({
     startMembers,
@@ -1194,6 +1350,25 @@ function calculate() {
   setText("liquidityReserveDetail", reserveFormula);
   setText("rampLiquidityNeedDetail", euro.format(projection.liquidityNeed));
 
+  const plausibilityItems = buildPlausibilityWarnings({
+    capitalRequirement,
+    financingGap,
+    projectionMonths,
+    bankLoan,
+    totalLoanMonths,
+    leaseFinancing,
+    leaseFinalPaymentAmount,
+    leaseTermMonths,
+    leaseDueDate,
+    monthlyLeasePayment,
+    investorCapital,
+    investorMonthlyPrincipalPercent,
+    investorTermMonths,
+    investorDueDate,
+    investorFinalPrincipal: investor.finalPrincipal,
+  });
+  renderPlausibilityWarnings(plausibilityItems);
+
   const projectName = document.querySelector("#projectName").value.trim();
   setText("resultProject", projectName || "Unbenanntes Projekt");
   setText("monthlyResult", euro.format(monthlyResult));
@@ -1222,6 +1397,18 @@ function calculate() {
     leaseFinalPaymentAffectsCashflow
       ? "Keine laufende Rücklage angesetzt"
       : `${euro.format(suggestedLeaseReserve)} / Mon. im Cashflow`,
+  );
+  setText(
+    "leaseReserveAtMaturity",
+    leaseFinalPaymentAffectsCashflow
+      ? "Keine laufende Rücklage angesetzt"
+      : euro.format(leaseReserveAtMaturity),
+  );
+  setText(
+    "leaseReserveCoverage",
+    leaseReserveCoverage === null
+      ? "Nicht anwendbar"
+      : `${decimal.format(leaseReserveCoverage)} % der Abschlussrate`,
   );
   setText("investorFirstPayment", `${euro.format(investor.firstPayment)} / Mon.`);
   setText("investorFinalPayment", euro.format(investor.finalPrincipal));
@@ -1309,6 +1496,8 @@ function calculate() {
     monthlyLeasePayment,
     leaseTotalInterest,
     suggestedLeaseReserve,
+    leaseReserveAtMaturity,
+    leaseReserveCoverage,
     investorCapital,
     investorInterest,
     investorTermMonths,
@@ -1331,6 +1520,7 @@ function calculate() {
     rampMonths,
     projectionMonths,
     projection,
+    plausibilityItems,
   };
 
   const comparisonMax = Math.max(netRevenue, monthlyCosts, 1);
@@ -1530,6 +1720,18 @@ function preparePrintReport() {
       ? "Keine laufende Rücklage angesetzt"
       : `${euro.format(data.suggestedLeaseReserve)} / Monat`,
   );
+  setText(
+    "printLeaseReserveAtMaturity",
+    data.leaseFinalPaymentAffectsCashflow
+      ? "Nicht angesetzt"
+      : euro.format(data.leaseReserveAtMaturity),
+  );
+  setText(
+    "printLeaseReserveCoverage",
+    data.leaseReserveCoverage === null
+      ? "Nicht anwendbar"
+      : `${decimal.format(data.leaseReserveCoverage)} %`,
+  );
   setText("printLeaseTotalInterest", euro.format(data.leaseTotalInterest));
 
   setText("printInvestorAmount", euro.format(data.investorCapital));
@@ -1546,6 +1748,24 @@ function preparePrintReport() {
   setText("printInvestorFirstPayment", `${euro.format(data.investor.firstPayment)} / Monat`);
   setText("printInvestorFinalPayment", euro.format(data.investor.finalPrincipal));
   setText("printInvestorTotalInterest", euro.format(data.investor.totalInterest));
+
+  const printPlausibilityItems =
+    data.plausibilityItems.length > 0
+      ? data.plausibilityItems
+      : [
+          {
+            level: "clear",
+            text: "Für die aktuellen Eingaben wurden keine rechnerischen Auffälligkeiten erkannt.",
+          },
+        ];
+  document.querySelector("#printPlausibilityWarnings").replaceChildren(
+    ...printPlausibilityItems.map((item) => {
+      const listItem = document.createElement("li");
+      listItem.dataset.level = item.level;
+      listItem.textContent = item.text;
+      return listItem;
+    }),
+  );
 
   const variance = decimal.format(data.scenarioVariance * 100);
   const scenarioRows = [
@@ -1581,6 +1801,10 @@ function preparePrintReport() {
   setText("printRampNeed", euro.format(data.projection.liquidityNeed));
   setText("printProjectionCumulative", euro.format(data.projection.cumulativeCashflow));
   setText(
+    "printProjectionLeaseReserve",
+    euro.format(data.projection.leaseReserveBalance),
+  );
+  setText(
     "printCapitalRecoveryMonth",
     formatCapitalRecovery(
       data.projection.capitalRecoveryMonth,
@@ -1596,13 +1820,14 @@ function preparePrintReport() {
           `Monat ${month.month}`,
           Math.round(month.memberCount).toLocaleString("de-DE"),
           euro.format(month.operatingResult),
+          euro.format(month.leaseReserveBalance),
           euro.format(month.specialPayment),
           euro.format(month.cashflow),
           euro.format(month.cumulativeCashflow),
         ],
         [
-          ...(month.cashflow < 0 ? [4] : []),
-          ...(month.cumulativeCashflow < 0 ? [5] : []),
+          ...(month.cashflow < 0 ? [5] : []),
+          ...(month.cumulativeCashflow < 0 ? [6] : []),
         ],
       ),
     ),

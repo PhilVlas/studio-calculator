@@ -2,7 +2,7 @@
 
 ## Version
 
-v0.9.0
+v0.10.0
 
 ## Ziel
 
@@ -16,7 +16,7 @@ zu müssen.
 
 ## Ziel der aktuellen Version
 
-Version 0.9.0 bleibt technisch bewusst einfach:
+Version 0.10.0 bleibt technisch bewusst einfach:
 
 - keine Benutzerverwaltung
 - kein Backend und keine Datenbank
@@ -83,7 +83,7 @@ Version 0.9.0 bleibt technisch bewusst einfach:
 
 - Mitgliederzahl zum Betriebsstart
 - Dauer des linearen Hochlaufs bis zur Basis-Mitgliederzahl
-- Betrachtungszeitraum in Monaten
+- Betrachtungszeitraum zwischen 1 und 180 Monaten
 - prozentuale Mitgliederabweichung für vorsichtiges und optimistisches Szenario
 
 ## Berechnungen
@@ -181,6 +181,8 @@ Schlusszahlungen berücksichtigt.
   aus Bankzinsen, Leasingrate und Investorenzahlung verwendet
 - Leasing-Abschlussrate im Fälligkeitsmonat bei aktivierter Auswahl; andernfalls
   gleichmäßige monatliche Rücklage über die Leasinglaufzeit
+- sichtbarer Aufbau und Stand der Leasing-Rücklage; bei Fälligkeit wird die
+  Abschlussrate aus der aufgebauten Rücklage entnommen
 - vollständige Rückzahlung des verbleibenden Investorenkapitals bei Fälligkeit
 - während der mietfreien Anlaufzeit wird keine Kaltmiete angesetzt
 - kumulierter Cashflow über den gewählten Betrachtungszeitraum
@@ -202,7 +204,7 @@ Amortisation verwendet dagegen das konstante Betriebsergebnis vor Finanzierung.
   gespeichert werden.
 - Der Bericht enthält Projekt- und Kostendaten, zentrale Ergebnisse,
   Investition und Finanzierung, den Szenariovergleich sowie die monatliche
-  Hochlauf-Tabelle.
+  Hochlauf-Tabelle und den Plausibilitätscheck.
 - Die Berichtserstellung überträgt keine Projektdaten an einen Server.
 
 ### Lokale Projekte und Projektdateien
@@ -262,6 +264,11 @@ Die Anwendung zeigt:
 - geschätzte Gesamtzinsen und rechnerische Eigenkapital-Amortisation
 - drei vergleichbare Mitgliederszenarien mit Betriebsergebnis und Cashflow
 - Hochlauf-Zusammenfassung und monatsgenaue Cashflow-Tabelle
+- monatlicher Stand einer angesetzten Leasing-Rücklage einschließlich ihrer
+  Verwendung bei Fälligkeit
+- automatische Hinweise auf Finanzierungslücken, deutliche Überdeckungen,
+  ungewöhnliche Leasing-Abschlussraten, vorzeitige Investorenrückzahlungen und
+  Zahlungen außerhalb des gewählten Betrachtungszeitraums
 - druckoptimierter PDF-Bericht mit Erstellungsdatum und fachlichem Hinweis
 - kurze textliche Einordnung der wichtigsten Werte
 
@@ -293,7 +300,7 @@ Die Anwendung zeigt:
 
 ## Abgrenzung
 
-Version 0.9.0 berücksichtigt insbesondere noch nicht:
+Version 0.10.0 berücksichtigt insbesondere noch nicht:
 
 - Zusatzumsätze, Rabatte, Ausfälle oder saisonale Schwankungen
 - individuelle Tilgungspläne, Gebühren, variable Zinsen oder Sondertilgungen

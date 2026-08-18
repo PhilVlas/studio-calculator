@@ -17,8 +17,8 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icons/studiocalculator-192-v1.png" type="image/png" />
     <link rel="apple-touch-icon" href="icons/studiocalculator-apple-180-v1.png" />
-    <link rel="stylesheet" href="styles.css?v=0.9.0" />
-    <script src="app.js?v=0.9.0" defer></script>
+    <link rel="stylesheet" href="styles.css?v=0.10.0" />
+    <script src="app.js?v=0.10.0" defer></script>
   </head>
   <body>
     <header class="hero">
@@ -32,7 +32,7 @@
               width="48"
               height="48"
             />
-            <p class="eyebrow">Studiocalculator · v0.9.0</p>
+            <p class="eyebrow">Studiocalculator · v0.10.0</p>
           </div>
           <h1>Trägt sich der Standort?</h1>
           <p class="hero__intro">
@@ -510,7 +510,7 @@
               <label class="field">
                 <span>Betrachtungszeitraum</span>
                 <span class="input-wrap">
-                  <input id="projectionMonths" name="projectionMonths" type="number" min="1" max="60" step="1" value="24" />
+                  <input id="projectionMonths" name="projectionMonths" type="number" min="1" max="180" step="1" value="24" />
                   <span class="unit">Mon.</span>
                 </span>
               </label>
@@ -711,6 +711,14 @@
                 <dt>Angesetzte monatliche Rücklage für Abschlussrate</dt>
                 <dd id="suggestedLeaseReserve">–</dd>
               </div>
+              <div>
+                <dt>Aufgebaute Rücklage bei Fälligkeit</dt>
+                <dd id="leaseReserveAtMaturity">–</dd>
+              </div>
+              <div>
+                <dt>Deckung der Abschlussrate</dt>
+                <dd id="leaseReserveCoverage">–</dd>
+              </div>
             </dl>
             <h3>Private Investoren</h3>
             <dl>
@@ -735,6 +743,17 @@
               </div>
             </dl>
           </details>
+        </section>
+
+        <section class="panel plausibility-panel" id="plausibilityPanel" data-state="clear" aria-labelledby="plausibility-title">
+          <div class="plausibility-panel__heading">
+            <div>
+              <p class="section-kicker">Automatische Prüfung</p>
+              <h2 id="plausibility-title">Plausibilitätscheck</h2>
+            </div>
+            <span id="plausibilityStatus">Keine Auffälligkeiten</span>
+          </div>
+          <ul id="plausibilityWarnings"></ul>
         </section>
 
         <section class="panel insight-panel">
@@ -855,7 +874,9 @@
           </div>
           <p>
             Linearer Mitgliederaufbau; Einmalinvestitionen sind bereits im
-            Kapitalbedarf enthalten und werden hier nicht erneut abgezogen.
+            Kapitalbedarf enthalten und werden hier nicht erneut abgezogen. Eine
+            gebildete Leasing-Rücklage wird bei Fälligkeit für die Abschlussrate
+            verwendet und fällt danach auf den verbleibenden Stand zurück.
           </p>
         </div>
 
@@ -875,6 +896,10 @@
           <article>
             <span>Mitglieder am Periodenende</span>
             <strong id="projectionEndMembers">–</strong>
+          </article>
+          <article>
+            <span>Leasing-Rücklagenstand am Periodenende</span>
+            <strong id="projectionLeaseReserve">–</strong>
           </article>
         </div>
 
@@ -896,6 +921,7 @@
                   <th>Monat</th>
                   <th>Mitglieder</th>
                   <th>Betriebsergebnis</th>
+                  <th>Rücklagenstand</th>
                   <th>Sonderzahlung</th>
                   <th>Cashflow</th>
                   <th>Kumuliert</th>
@@ -913,7 +939,7 @@
         <div>
           <div class="print-brand-row">
             <img src="icons/studiocalculator-192-v1.png" alt="" />
-            <p class="print-brand">Studiocalculator · v0.9.0</p>
+            <p class="print-brand">Studiocalculator · v0.10.0</p>
           </div>
           <h1 id="printProjectName">Studio Musterstadt</h1>
           <p>Wirtschaftlichkeits- und Finanzierungsübersicht</p>
@@ -1025,6 +1051,8 @@
             <div><dt>Fälligkeit</dt><dd id="printLeaseDueDate">–</dd></div>
             <div><dt>Im Fälligkeits-Cashflow</dt><dd id="printLeaseFinalCashflow">–</dd></div>
             <div><dt>Monatliche Rücklage</dt><dd id="printLeaseReserve">–</dd></div>
+            <div><dt>Rücklage bei Fälligkeit</dt><dd id="printLeaseReserveAtMaturity">–</dd></div>
+            <div><dt>Deckung der Abschlussrate</dt><dd id="printLeaseReserveCoverage">–</dd></div>
             <div><dt>Geschätzte Leasingzinsen</dt><dd id="printLeaseTotalInterest">–</dd></div>
           </dl>
         </section>
@@ -1046,6 +1074,11 @@
             <div><dt>Geschätzte Gesamtzinsen</dt><dd id="printInvestorTotalInterest">–</dd></div>
           </dl>
         </div>
+      </section>
+
+      <section class="print-block">
+        <h2>Plausibilitätscheck</h2>
+        <ul class="print-warning-list" id="printPlausibilityWarnings"></ul>
       </section>
 
       <section class="print-block">
@@ -1073,6 +1106,7 @@
           <div><dt>Positiver Cashflow ab</dt><dd id="printPositiveMonth">–</dd></div>
           <div><dt>Hochlaufbedarf (Prognose)</dt><dd id="printRampNeed">–</dd></div>
           <div><dt>Kumulierter Cashflow</dt><dd id="printProjectionCumulative">–</dd></div>
+          <div><dt>Leasing-Rücklagenstand am Periodenende</dt><dd id="printProjectionLeaseReserve">–</dd></div>
           <div><dt>Gesamtkapital zurückverdient</dt><dd id="printCapitalRecoveryMonth">–</dd></div>
         </dl>
 
@@ -1082,6 +1116,7 @@
               <th>Monat</th>
               <th>Mitglieder</th>
               <th>Betriebsergebnis</th>
+              <th>Rücklagenstand</th>
               <th>Sonderzahlung</th>
               <th>Cashflow</th>
               <th>Kumuliert</th>
@@ -1101,7 +1136,7 @@
     </section>
 
     <footer>
-      <p>Studiocalculator v0.9.0 · Installierbar und lokal nutzbar</p>
+      <p>Studiocalculator v0.10.0 · Installierbar und lokal nutzbar</p>
     </footer>
 
     <aside class="update-notice" id="updateNotice" aria-live="polite" hidden>
